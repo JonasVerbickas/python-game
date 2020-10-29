@@ -36,9 +36,20 @@ def getText():
 
 def formatText(text):
 	formattedText = text
+	# remove everything that is not a letter or whitespace
 	for char in text:
 		if char.isalpha() == False:
-			formattedText = formattedText.replace(char, '')
+			if char != ' ':
+				formattedText = formattedText.replace(char, '')
+	print(formattedText)
+
+	# turn the text into a list
+	formattedText = formattedText.split(' ')
+
+	# make everything lowercase
+	for i in range(len(formattedText)):
+		for char in formattedText[i]:
+			formattedText[i] = formattedText[i].replace(char, char.lower())
 	return formattedText
 
 def main():
