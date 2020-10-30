@@ -18,11 +18,11 @@ def openFile(filename):
 
 
 def getText():
-	mode = input("\n\n\n\n\n\n\n\n\n\n\n\nEnter mode ID(0 to quit, 1 for input, 2 for file):")
+	mode = input("\n\n\n\n\n\n\n\n\n\n\n\nEnter mode ID (0 to quit, 1 for input, 2 for file):")
 
 	while mode not in ['0', '1', '2']:
 		print("WRONG ID!")
-		mode = input("Enter mode ID:(0 to quit, 1 for input, 2 for file):")
+		mode = input("Enter mode ID (0 to quit, 1 for input, 2 for file):")
 
 	text = ""
 	while text == "":
@@ -59,9 +59,10 @@ def main():
 	
 	misspelled_count = 0
 	added_to_dict = 0
+	accepted_suggestions = 0
 	dictionary = open("EnglishWords.txt", 'r').read().split('\n')
-	total_number_of_words = len(text)
 	add_to_dict = []
+	total_number_of_words = len(text)
 	for index in range(total_number_of_words):
 		word_to_check = text[index].lower()
 		print(word_to_check, end="")
@@ -97,19 +98,37 @@ def main():
 					decision_on_suggestion = input("Use the suggested word? (1 use, 2 reject):")
 				if decision_on_suggestion == '1':
 					text[index] = closest_word
+					accepted_suggestions += 1
 				else:
 					misspelled_count += 1
 
-	print("Total number of words:" + str(total_number_of_words))
+
+	# STATISTICS
+	# to terminal
+	print("\nTotal number of words:" + str(total_number_of_words))
 	print("Words spelled correctly:" + str(total_number_of_words - misspelled_count))
 	print("Misspelled words:" + str(misspelled_count))
 	print("Added to the dictionary:" + str(added_to_dict))
-	output = open("output.txt", 'w')
+	print("Accepted suggestions:" + str(accepted_suggestions))
+	# to file
+	filename = input("\nEnter the name of the output file (without the extention):")
+	output = open(filename + ".txt", 'w')
+	output.write("Total number of words:" + str(total_number_of_words) + '\n')
+	output.write("Words spelled correctly:" + str(total_number_of_words - misspelled_count) + '\n')
+	output.write("Misspelled words:" + str(misspelled_count) + '\n')
+	output.write("Added to the dictionary:" + str(added_to_dict) + '\n')
+	output.write("Accepted suggestions:" + str(accepted_suggestions) + '\n')
+	print("\n\n")
 	output.write(' '.join(text))
-
+	output.close()
+	# add new words to dictionary
 	dict_file = open("EnglishWords.txt", 'a')
 	for word_to_add in add_to_dict:
 		dict_file.write('\n' + word_to_add)
 	dict_file.close()
+
+	if input("Input (1) to go back to main manu or anything else to quit:") == '1':
+		main()
+
 
 main()
