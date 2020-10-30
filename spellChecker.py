@@ -1,11 +1,14 @@
+from difflib import SequenceMatcher
+
 def openFile(filename):
 	text = ""
 	try:
 		f = open(filename, 'r')
 		text = f.readlines()
+		f.close()
 	except FileNotFoundError:
 		print("No such file found")
-		retype = input("Retype your file name or type in a number 0-2 to change mode")
+		retype = input("Retype your file name OR type in a number 0-2 to change mode:")
 		if retype in ['0', '1', '2']:
 			return retype
 		else:
@@ -26,12 +29,13 @@ def getText():
 		if mode == '0':
 			return 0
 		elif mode == '1':
-			text = input("Enter a text to spellcheck:")
+			text = input("Enter text to spellcheck:")
 		elif mode == '2':
-			filename = input("Enter a filename of txt file for spellchecking:")
+			filename = input("Enter a filename of the file for spellchecking (or to change mode type in one of the IDs):")
 			text = openFile(filename)
 			if text in ['0', '1', '2']:
 				mode = text
+		text = formatText(text)
 	return text
 
 def formatText(text):
@@ -41,42 +45,71 @@ def formatText(text):
 		if char.isalpha() == False:
 			if char != ' ':
 				formattedText = formattedText.replace(char, '')
-	print(formattedText)
-
-	# turn the text into a list
-	formattedText = formattedText.split(' ')
-
-	# make everything lowercase
-	for i in range(len(formattedText)):
-		for char in formattedText[i]:
-			formattedText[i] = formattedText[i].replace(char, char.lower())
+		else:
+			formattedText = formattedText.replace(char, char.lower())
 	return formattedText
 
 def main():
 	text = getText()
-	text = formatText(text)
+	if text == 0:
+		return 0
+	# turn the text string into a list of words
+	text = text.split(' ')
 	print(text)
-
+	
 	misspelled_count = 0
 	added_to_dict = 0
 	dictionary = open("EnglishWords.txt", 'r').read().split('\n')
-	for word_to_check in text:
-		for word_in_dict in dictionary:
-			if word_in_dict == word_to_check.lower() or len(word_to_check) == 0:
-				break;
+	total_number_of_words = len(text)
+	add_to_dict = []
+	for index in range(total_number_of_words):
+		word_to_check = text[index].lower()
+		print(word_to_check, end="")
+
+		# used if is this weird way
+		# to make it more easily readable
+		# first check both dictionaries
+		word_is_correct = word_to_check in dictionary or word_to_check in add_to_dict
+		if word_is_correct:
+			print()
 		else:
-			print(word_to_check + " not found")
+			print(" - NOT FOUND")
 			option = 0
 			while option not in ['1', '2', '3', '4']:
 				option = input("1 to ignore, 2 to mark, 3 to add to dictionary, 4 to get a suggestion:")
 
 			if option == '1':
 				misspelled_count += 1
+			elif option == '2':
+				text[index] = "?" + text[index] + "?"
+				misspelled_count += 1
 			elif option == '3':
 				added_to_dict += 1
+				add_to_dict.append(word_to_check)
+			elif option == '4':
+				closest_word = "";
+				for word_in_dict in dictionary:
+					if SequenceMatcher(None, word_in_dict, word_to_check).ratio() > SequenceMatcher(None, closest_word, word_to_check).ratio():
+							closest_word = word_in_dict
+				print("Suggestion:" + closest_word)
+				decision_on_suggestion = ''
+				while decision_on_suggestion not in ['1', '2']:
+					decision_on_suggestion = input("Use the suggested word? (1 use, 2 reject):")
+				if decision_on_suggestion == '1':
+					text[index] = closest_word
+				else:
+					misspelled_count += 1
 
-
+	print("Total number of words:" + str(total_number_of_words))
+	print("Words spelled correctly:" + str(total_number_of_words - misspelled_count))
 	print("Misspelled words:" + str(misspelled_count))
-		
+	print("Added to the dictionary:" + str(added_to_dict))
+	output = open("output.txt", 'w')
+	output.write(' '.join(text))
+
+	dict_file = open("EnglishWords.txt", 'a')
+	for word_to_add in add_to_dict:
+		dict_file.write('\n' + word_to_add)
+	dict_file.close()
 
 main()
