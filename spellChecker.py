@@ -111,14 +111,14 @@ def main():
 	print("Added to the dictionary:" + str(added_to_dict))
 	print("Accepted suggestions:" + str(accepted_suggestions))
 	# to file
-	filename = input("\nEnter the name of the output file (without the extention):")
-	output = open(filename + ".txt", 'w')
+	filename = input("\nEnter the name of the output file:")
+	output = open(filename, 'w')
 	output.write("Total number of words:" + str(total_number_of_words) + '\n')
 	output.write("Words spelled correctly:" + str(total_number_of_words - misspelled_count) + '\n')
 	output.write("Misspelled words:" + str(misspelled_count) + '\n')
 	output.write("Added to the dictionary:" + str(added_to_dict) + '\n')
 	output.write("Accepted suggestions:" + str(accepted_suggestions) + '\n')
-	print("\n\n")
+	output.write("\n")
 	output.write(' '.join(text))
 	output.close()
 	# add new words to dictionary
@@ -127,6 +127,7 @@ def main():
 		dict_file.write('\n' + word_to_add)
 	dict_file.close()
 
+	print('\n')
 	if input("Input (1) to go back to main manu or anything else to quit:") == '1':
 		main()
 

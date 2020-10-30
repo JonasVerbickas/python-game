@@ -1,0 +1,6 @@
+Total number of words:6
+Words spelled correctly:4
+Misspelled words:2
+Added to the dictionary:0
+Accepted suggestions:1
+this sentance is almost correct hehe
