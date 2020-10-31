@@ -1,4 +1,5 @@
 from difflib import SequenceMatcher
+from datetime import datetime
 
 def openFile(filename):
 	text = ""
@@ -63,6 +64,8 @@ def main():
 	dictionary = open("EnglishWords.txt", 'r').read().split('\n')
 	add_to_dict = []
 	total_number_of_words = len(text)
+
+	starting_time = datetime.now()
 	for index in range(total_number_of_words):
 		word_to_check = text[index].lower()
 		print(word_to_check, end="")
@@ -103,6 +106,7 @@ def main():
 					misspelled_count += 1
 
 
+	total_time_needed = datetime.now() - starting_time
 	# STATISTICS
 	# to terminal
 	print("\nTotal number of words:" + str(total_number_of_words))
@@ -110,6 +114,8 @@ def main():
 	print("Misspelled words:" + str(misspelled_count))
 	print("Added to the dictionary:" + str(added_to_dict))
 	print("Accepted suggestions:" + str(accepted_suggestions))
+	print("Spellcheck was done on: " + str(starting_time))
+	print("The program took " + str(round(total_time_needed.total_seconds(), 2)) + " seconds\n")
 	# to file
 	filename = input("\nEnter the name of the output file:")
 	output = open(filename, 'w')
@@ -118,6 +124,8 @@ def main():
 	output.write("Misspelled words:" + str(misspelled_count) + '\n')
 	output.write("Added to the dictionary:" + str(added_to_dict) + '\n')
 	output.write("Accepted suggestions:" + str(accepted_suggestions) + '\n')
+	output.write("Date: " + str(starting_time) + '\n')
+	output.write("The program took " + str(round(total_time_needed.total_seconds(), 2)) + " seconds\n")
 	output.write("\n")
 	output.write(' '.join(text))
 	output.close()
