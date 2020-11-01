@@ -1,9 +1,0 @@
-Total number of words:6
-Words spelled correctly:5
-Misspelled words:1
-Added to the dictionary:0
-Accepted suggestions:2
-Date: 2020-10-31 12:39:14.618197
-The program took 15.45 seconds
-
-this entrance is almost correct ?hehe?
