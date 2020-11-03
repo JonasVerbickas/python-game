@@ -112,6 +112,7 @@ def main():
 	total_time_needed = datetime.now() - starting_time
 	# STATISTICS
 	# to terminal
+<<<<<<< HEAD
 	printDashes()
 	print("STATISTICS")
 	print("Total number of words: " + str(total_number_of_words))
@@ -119,15 +120,41 @@ def main():
 	print("Misspelled words: " + str(misspelled_count))
 	print("Added to the dictionary: " + str(added_to_dict))
 	print("Accepted suggestions: " + str(accepted_suggestions))
+||||||| 70207ea
+	print("\nTotal number of words:" + str(total_number_of_words))
+	print("Words spelled correctly:" + str(total_number_of_words - misspelled_count))
+	print("Misspelled words:" + str(misspelled_count))
+	print("Added to the dictionary:" + str(added_to_dict))
+	print("Accepted suggestions:" + str(accepted_suggestions))
+=======
+	print("\nSTATISTICS")
+	print("Total number of words: " + str(total_number_of_words))
+	print("Words spelled correctly: " + str(total_number_of_words - misspelled_count))
+	print("Misspelled words: " + str(misspelled_count))
+	print("Added to the dictionary: " + str(added_to_dict))
+	print("Accepted suggestions: " + str(accepted_suggestions))
+>>>>>>> 830940027d8d236d9db9a90d8ea0f25f17167e66
 	print("Spellcheck was done on: " + str(starting_time))
+<<<<<<< HEAD
 	print("The program took " + str(round(total_time_needed.total_seconds(), 2)) + " seconds")
 	printDashes()
+||||||| 70207ea
+	print("The program took " + str(round(total_time_needed.total_seconds(), 2)) + " seconds\n")
+=======
+	print("The program took " + str(round(total_time_needed.total_seconds(), 2)) + " seconds")
+>>>>>>> 830940027d8d236d9db9a90d8ea0f25f17167e66
 	# to file
+<<<<<<< HEAD
 	filename = ""
 	while len(filename) == 0:
 		filename = input("\nEnter the name of the output file: ")
 	print()
 
+||||||| 70207ea
+	filename = input("\nEnter the name of the output file:")
+=======
+	filename = input("\nEnter the name of the output file: ")
+>>>>>>> 830940027d8d236d9db9a90d8ea0f25f17167e66
 	output = open(filename, 'w')
 	output.write("Total number of words: " + str(total_number_of_words) + '\n')
 	output.write("Words spelled correctly: " + str(total_number_of_words - misspelled_count) + '\n')
@@ -145,8 +172,15 @@ def main():
 		dict_file.write('\n' + word_to_add)
 	dict_file.close()
 
+<<<<<<< HEAD
 	printDashes()
 	if input("\nInput (1) to go back to main manu or anything else to quit:") == '1':
+||||||| 70207ea
+	print('\n')
+	if input("Input (1) to go back to main manu or anything else to quit:") == '1':
+=======
+	if input("\nInput (1) to go back to main manu or anything else to quit:") == '1':
+>>>>>>> 830940027d8d236d9db9a90d8ea0f25f17167e66
 		main()
 
 
