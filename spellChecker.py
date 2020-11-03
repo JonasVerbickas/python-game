@@ -25,6 +25,7 @@ def getText():
 		print("WRONG ID!")
 		mode = input("Enter mode ID (0 to quit, 1 for input, 2 for file): ")
 
+	print()
 	text = ""
 	while text == "":
 		if mode == '0':
@@ -50,6 +51,9 @@ def formatText(text):
 			formattedText = formattedText.replace(char, char.lower())
 	return formattedText
 
+def printDashes():
+	print("-----------------------------------------------------")
+
 def main():
 	text = getText()
 	if text == 0:
@@ -65,6 +69,8 @@ def main():
 	total_number_of_words = len(text)
 
 	starting_time = datetime.now()
+	printDashes()
+	print("CURRENT WORD")
 	for index in range(total_number_of_words):
 		word_to_check = text[index].lower()
 		print(word_to_check, end="")
@@ -106,7 +112,8 @@ def main():
 	total_time_needed = datetime.now() - starting_time
 	# STATISTICS
 	# to terminal
-	print("\nSTATISTICS")
+	printDashes()
+	print("STATISTICS")
 	print("Total number of words: " + str(total_number_of_words))
 	print("Words spelled correctly: " + str(total_number_of_words - misspelled_count))
 	print("Misspelled words: " + str(misspelled_count))
@@ -114,8 +121,13 @@ def main():
 	print("Accepted suggestions: " + str(accepted_suggestions))
 	print("Spellcheck was done on: " + str(starting_time))
 	print("The program took " + str(round(total_time_needed.total_seconds(), 2)) + " seconds")
+	printDashes()
 	# to file
-	filename = input("\nEnter the name of the output file: ")
+	filename = ""
+	while len(filename) == 0:
+		filename = input("\nEnter the name of the output file: ")
+	print()
+
 	output = open(filename, 'w')
 	output.write("Total number of words: " + str(total_number_of_words) + '\n')
 	output.write("Words spelled correctly: " + str(total_number_of_words - misspelled_count) + '\n')
@@ -133,6 +145,7 @@ def main():
 		dict_file.write('\n' + word_to_add)
 	dict_file.close()
 
+	printDashes()
 	if input("\nInput (1) to go back to main manu or anything else to quit:") == '1':
 		main()
 
