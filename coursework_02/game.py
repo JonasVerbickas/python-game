@@ -7,14 +7,14 @@ from random import randint
 
 WIDTH = 700
 HEIGHT = 400
-PLAYER_SIZE = 20
+PLAYER_SIZE = 28
 STARTING_POINT = (40, HEIGHT-PLAYER_SIZE*1.75)
-WALL_DIMEN = (10, 12)
+WALL_DIMEN = (16, 25)
 
 PROJECTILES = []
-PROJECTILE_SIZE = 8
+PROJECTILE_SIZE = 12
 POWER = 6
-MAX_SHRAPNEL_COUNT = 4
+MAX_SHRAPNEL_COUNT = 5
 SHRAPNEL = []
 SHRAPNEL_POWER_MULT = 0.5
 RETICLE_SIZE = 50
@@ -23,14 +23,17 @@ G = 0.0981
 ZOMBIES = []
 Z_SIZE = PLAYER_SIZE
 Z_SPEED = 2.5
-TIME_BETWEEN_SPAWNS = 4000
+TIME_BETWEEN_SPAWNS = 2000
+LAST_SPAWN_TIME = 0 
+TIME_DECREMENT = 0.95 # makes spawns more often as time goes by
+FASTEST_SPAWING = 220
 
 SCORE = 0
 SCORE_PER_Z = 100
 
 MAX_AMMO = 5
 CURRENT_AMMO = MAX_AMMO
-TIME_TO_RELOAD = 1000
+TIME_TO_RELOAD = 500
 RELOAD_START_TIME = 0
 
 HP = 5
@@ -98,9 +101,9 @@ def shoot(event):
 
 
 def createShrapnel(startintg_xy):
-	startintg_xy[1] = HEIGHT # this ensures that shrapnel always spawns
+	startintg_xy[1] = HEIGHT-5 # this ensures that shrapnel always spawns
 	for i in range(MAX_SHRAPNEL_COUNT - randint(0, 1)): # randomize number of shrapnel
-		angle = randint(50, 100)
+		angle = randint(50, 130)
 		angle = radians(angle)
 		shrapnel = createProjectile(startintg_xy, angle, power=POWER*SHRAPNEL_POWER_MULT)
 		SHRAPNEL.append(shrapnel)
@@ -166,9 +169,12 @@ def everythingProjectiles():
 
 
 def createZombie():
+	global TIME_BETWEEN_SPAWNS
 	xy = coordsFromBottomLeft([WIDTH, STARTING_POINT[1]], Z_SIZE)
 	z = sky.create_oval(xy, fill='dark green')
 	ZOMBIES.append(z)
+	if TIME_BETWEEN_SPAWNS > FASTEST_SPAWING:
+		TIME_BETWEEN_SPAWNS *= TIME_DECREMENT
 
 
 def moveEnemies():
@@ -210,14 +216,13 @@ txt_ammo = sky.create_text(WIDTH/2, 50, text="Ammo: 0", font=("Arial", 20, 'bold
 txt_health = sky.create_text(WIDTH/2, 80, text="Health: 0", font=("Arial", 20, 'bold'))
 player = sky.create_oval(STARTING_POINT[0], STARTING_POINT[1], STARTING_POINT[0] + PLAYER_SIZE, STARTING_POINT[1] + PLAYER_SIZE, fill="tomato")
 reticle = sky.create_line(0, 0, 0, 0, fill='red')
-wall1 = sky.create_rectangle(70, HEIGHT, 70+WALL_DIMEN[0], HEIGHT-WALL_DIMEN[1], fill='brown4')
+wall1 = sky.create_rectangle(90, HEIGHT, 90+WALL_DIMEN[0], HEIGHT-WALL_DIMEN[1], fill='brown4')
 
-sky.bind("<ButtonRelease-1>", shoot)
-sky.bind("<Motion>", aim)
+window.bind("<ButtonRelease-1>", shoot) # shoot when in window
+sky.bind("<Motion>", aim) # only aim in when sky
 
 
-LAST_SPAWN_TIME = TIME_BETWEEN_SPAWNS # instant spawn
-while True:
+while HP > 0:
 	everythingProjectiles()
 	if time() - LAST_SPAWN_TIME > TIME_BETWEEN_SPAWNS/1000:
 		createZombie()
