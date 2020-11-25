@@ -7,18 +7,19 @@ from time import time
 WIDTH = 700
 HEIGHT = 400
 PLAYER_SIZE = 20
-STARTING_POINT = (20, HEIGHT-PLAYER_SIZE*1.5)
-WALL_DIMEN = (10, 15)
+STARTING_POINT = (20, HEIGHT-PLAYER_SIZE*1.75)
+WALL_DIMEN = (8, 12)
 
 PROJECTILES = []
-PROJECTILE_SIZE = 7
+PROJECTILE_SIZE = 8
+POWER = 6
 RETICLE_SIZE = 50
 G = 0.0981
 
 ZOMBIES = []
 Z_SIZE = PLAYER_SIZE
-Z_SPEED = 2
-TIME_BETWEEN_SPAWNS = 5000
+Z_SPEED = 2.5
+TIME_BETWEEN_SPAWNS = 4000
 
 SCORE = 0
 SCORE_PER_Z = 100
@@ -69,8 +70,7 @@ def shoot(event):
 	angle = angleBetweenPointAndPlayer([reticle_coords[2], reticle_coords[3]])
 	if angle > 0:
 		trajectory = [round(cos(angle), 2), round(sin(angle), 2)] # GET FROM MOUSE_POS LATER!!!
-		power = 6 # GET FROM THE TIME MOUSE WAS HELD DOWN FOR
-		vector = [direction * power for direction in trajectory]
+		vector = [direction * POWER for direction in trajectory]
 
 		player_center = getCenter(sky.coords(player))
 		xy = coordsFromCenter(player_center, PROJECTILE_SIZE)
@@ -89,44 +89,47 @@ def BOOM(projectile, kill_id=-1):
 		SCORE += SCORE_PER_Z
 
 
-def moveProjectiles():
-	for projectile in list(PROJECTILES):
-		# if not out of bounds
-		if sky.coords(projectile['id'])[3] < HEIGHT:
-			vector = projectile['vector']
-			sky.move(projectile['id'], vector[0], -vector[1])
-		else:
-			BOOM(projectile)
+def moveProjectile(projectile):
+	# if not out of bounds
+	vector = projectile['vector']
+	sky.move(projectile['id'], vector[0], -vector[1])
 
 
-def applyGravity(): # rename later
-	for projectile in PROJECTILES:
-		projectile['vector'][1] -= G/2
+def applyGravity(projectile): # rename later
+	projectile['vector'][1] -= G/2
 
 
 def outOfBounds(coords):
 	# horizontal bounds
 	if coords[0] > WIDTH or coords[2] < 0:
 		return True
-	elif coords[1] > HEIGHT or coords[3] < 0:
+	# vertical
+	elif coords[1] > HEIGHT: # or coords[3] < 0: # no top bounds to allow projectiles to fall from the sky
 		return True
 	else:
 		return False
 
-def checkForCollision():
+def checkForCollision(projectile):
+	p_coords = sky.coords(projectile['id'])
+	if outOfBounds(p_coords):
+		BOOM(projectile)
+
+	else:
+		p_center = getCenter(p_coords)
+		for z in ZOMBIES:
+			z_center = getCenter(sky.coords(z))
+			dist_vector = calcDistanceVector(p_center, z_center)
+			absolute_dist = pythagoras(dist_vector)
+			if absolute_dist < (PROJECTILE_SIZE/2 + Z_SIZE/2):
+				BOOM(projectile, z)
+
+
+def everythingProjectiles():
 	for projectile in list(PROJECTILES):
-		p_coords = sky.coords(projectile['id'])
-		if outOfBounds(p_coords):
-			BOOM(projectile)
-			continue
-		else:
-			p_center = getCenter(p_coords)
-			for z in ZOMBIES:
-				z_center = getCenter(sky.coords(z))
-				dist_vector = calcDistanceVector(p_center, z_center)
-				absolute_dist = pythagoras(dist_vector)
-				if absolute_dist < (PROJECTILE_SIZE/2 + Z_SIZE/2):
-					BOOM(projectile, z)
+		moveProjectile(projectile)
+		applyGravity(projectile)
+		checkForCollision(projectile)
+
 
 def createZombie():
 	xy = coordsFromBottomLeft([WIDTH, STARTING_POINT[1]], Z_SIZE)
@@ -137,6 +140,7 @@ def createZombie():
 def moveEnemies():
 	for z in ZOMBIES:
 		sky.move(z, -Z_SPEED, 0)
+
 
 def updateText():
 	sky.itemconfig(txt, text="Score:" + str(SCORE))
@@ -152,7 +156,7 @@ ground.pack()
 txt = sky.create_text(WIDTH/2, 20, text="Score: 0", font=("Arial", 20, 'bold'))
 player = sky.create_oval(STARTING_POINT[0], STARTING_POINT[1], STARTING_POINT[0] + PLAYER_SIZE, STARTING_POINT[1] + PLAYER_SIZE, fill="tomato")
 reticle = sky.create_line(0, 0, 0, 0, fill='red')
-wall1 = sky.create_rectangle(70, HEIGHT, 70+WALL_DIMEN[0], HEIGHT-WALL_DIMEN[1], fill='brown4')
+wall1 = sky.create_rectangle(60, HEIGHT, 60+WALL_DIMEN[0], HEIGHT-WALL_DIMEN[1], fill='brown4')
 
 sky.bind("<ButtonRelease-1>", shoot)
 sky.bind("<Motion>", aim)
@@ -160,15 +164,13 @@ sky.bind("<Motion>", aim)
 
 LAST_SPAWN_TIME = TIME_BETWEEN_SPAWNS # instant spawn
 while True:
-	moveProjectiles()
-	applyGravity()
-	checkForCollision()
+	everythingProjectiles()
 	if time() - LAST_SPAWN_TIME > TIME_BETWEEN_SPAWNS/1000:
 		createZombie()
 		LAST_SPAWN_TIME = time()
 	moveEnemies()
 	updateText()
 	window.update()
-	window.after(5)
+	window.after(3)
 
 window.mainloop()
