@@ -20,6 +20,9 @@ Z_SIZE = PLAYER_SIZE
 Z_SPEED = 2
 TIME_BETWEEN_SPAWNS = 5000
 
+SCORE = 0
+SCORE_PER_Z = 100
+
 def getCenter(coords):
 	x_mid = (coords[2] - coords[0])/2 + coords[0]
 	y_mid = (coords[3] - coords[1])/2 + coords[1]
@@ -82,6 +85,8 @@ def BOOM(projectile, kill_id=-1):
 	if kill_id > 0:
 		sky.delete(kill_id)
 		ZOMBIES.remove(kill_id)
+		global SCORE
+		SCORE += SCORE_PER_Z
 
 
 def moveProjectiles():
@@ -133,6 +138,9 @@ def moveEnemies():
 	for z in ZOMBIES:
 		sky.move(z, -Z_SPEED, 0)
 
+def updateText():
+	sky.itemconfig(txt, text="Score:" + str(SCORE))
+
 
 window = Tk()
 window.title("PEW PEW")
@@ -141,7 +149,7 @@ sky.pack()
 ground = Canvas(width=WIDTH, height=HEIGHT/2, background='pale green')
 ground.pack()
 
-
+txt = sky.create_text(WIDTH/2, 20, text="Score: 0", font=("Arial", 20, 'bold'))
 player = sky.create_oval(STARTING_POINT[0], STARTING_POINT[1], STARTING_POINT[0] + PLAYER_SIZE, STARTING_POINT[1] + PLAYER_SIZE, fill="tomato")
 reticle = sky.create_line(0, 0, 0, 0, fill='red')
 wall1 = sky.create_rectangle(70, HEIGHT, 70+WALL_DIMEN[0], HEIGHT-WALL_DIMEN[1], fill='brown4')
@@ -159,6 +167,7 @@ while True:
 		createZombie()
 		LAST_SPAWN_TIME = time()
 	moveEnemies()
+	updateText()
 	window.update()
 	window.after(5)
 
