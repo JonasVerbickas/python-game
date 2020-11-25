@@ -1,6 +1,7 @@
 from tkinter import Tk, Canvas
-from math import sin, cos, atan, pi, sqrt
+from math import sin, cos, atan, pi, sqrt, radians
 from time import time
+from random import randint
 
 """ARTILERY SIM?!?!??!?!"""
 
@@ -13,6 +14,8 @@ WALL_DIMEN = (8, 12)
 PROJECTILES = []
 PROJECTILE_SIZE = 8
 POWER = 6
+MAX_SHRAPNEL_COUNT = 5
+SHRAPNEL = []
 RETICLE_SIZE = 50
 G = 0.0981
 
@@ -58,10 +61,19 @@ def coordsFromCenter(xy, size):
 def aim(event):
 	player_center = getCenter(sky.coords(player))
 	angle = angleBetweenPointAndPlayer([event.x, event.y])
+	print(angle)
 	if angle > 0:
 		xy = (player_center[0], player_center[1], player_center[0]+cos(angle)*RETICLE_SIZE, player_center[1]-sin(angle)*RETICLE_SIZE)
 		sky.coords(reticle, xy)
 
+
+def createProjectile(starting_xy, angle, power=POWER):
+	trajectory = [round(cos(angle), 2), round(sin(angle), 2)] # GET FROM MOUSE_POS LATER!!!
+	vector = [direction * power for direction in trajectory]
+	xy = coordsFromCenter(starting_xy, PROJECTILE_SIZE)
+	projectile_id = sky.create_rectangle(xy, fill='red')
+	projectile = {"id": projectile_id, "vector": vector}
+	return projectile
 
 def shoot(event):
 	# shoot based on reticle and not mouse
@@ -69,19 +81,28 @@ def shoot(event):
 	reticle_coords = sky.coords(reticle)
 	angle = angleBetweenPointAndPlayer([reticle_coords[2], reticle_coords[3]])
 	if angle > 0:
-		trajectory = [round(cos(angle), 2), round(sin(angle), 2)] # GET FROM MOUSE_POS LATER!!!
-		vector = [direction * POWER for direction in trajectory]
-
 		player_center = getCenter(sky.coords(player))
-		xy = coordsFromCenter(player_center, PROJECTILE_SIZE)
-		projectile_id = sky.create_rectangle(xy, fill='red')
-		projectile = {"id": projectile_id, "vector": vector}
+		projectile = createProjectile(player_center, angle)
 		PROJECTILES.append(projectile)
 
 
-def BOOM(projectile, kill_id=-1):
-	sky.delete(projectile['id'])
-	PROJECTILES.remove(projectile)
+def createShrapnel(startintg_xy):
+	for i in range(randint(2, MAX_SHRAPNEL_COUNT)):
+		angle = randint(30, 100)
+		angle = radians(angle)
+		shrapnel = createProjectile(startintg_xy, angle, power=POWER/1.5)
+		SHRAPNEL.append(shrapnel)
+
+def BOOM(projectile, kill_id=-1, is_shrapnel=False):
+	if is_shrapnel:
+		projectile_center = getCenter(sky.coords(projectile['id']))
+		createShrapnel(projectile_center)
+		sky.delete(projectile['id'])
+		PROJECTILES.remove(projectile)
+	else:
+		sky.delete(projectile['id'])
+		SHRAPNEL.remove(projectile)
+
 	if kill_id > 0:
 		sky.delete(kill_id)
 		ZOMBIES.remove(kill_id)
@@ -100,20 +121,16 @@ def applyGravity(projectile): # rename later
 
 
 def outOfBounds(coords):
-	# horizontal bounds
-	if coords[0] > WIDTH or coords[2] < 0:
-		return True
 	# vertical
-	elif coords[1] > HEIGHT: # or coords[3] < 0: # no top bounds to allow projectiles to fall from the sky
+	if coords[1] > HEIGHT: # or coords[3] < 0: # no top bounds to allow projectiles to fall from the sky
 		return True
 	else:
 		return False
 
-def checkForCollision(projectile):
+def checkForCollision(projectile, is_shrapnel=False):
 	p_coords = sky.coords(projectile['id'])
 	if outOfBounds(p_coords):
-		BOOM(projectile)
-
+		BOOM(projectile, is_shrapnel=is_shrapnel)
 	else:
 		p_center = getCenter(p_coords)
 		for z in ZOMBIES:
@@ -121,14 +138,19 @@ def checkForCollision(projectile):
 			dist_vector = calcDistanceVector(p_center, z_center)
 			absolute_dist = pythagoras(dist_vector)
 			if absolute_dist < (PROJECTILE_SIZE/2 + Z_SIZE/2):
-				BOOM(projectile, z)
+				BOOM(projectile, z, is_shrapnel=is_shrapnel)
 
 
 def everythingProjectiles():
 	for projectile in list(PROJECTILES):
 		moveProjectile(projectile)
 		applyGravity(projectile)
-		checkForCollision(projectile)
+		checkForCollision(projectile, is_shrapnel=True)
+
+	for shrapnel in list(SHRAPNEL):
+		moveProjectile(shrapnel)
+		applyGravity(shrapnel)
+		checkForCollision(shrapnel, is_shrapnel=False)
 
 
 def createZombie():
