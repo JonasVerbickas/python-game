@@ -1,6 +1,6 @@
 from tkinter import Tk, Canvas
 from math import sin, cos, atan, pi, sqrt, radians
-from time import time
+from time import time, sleep
 from random import randint
 
 """ARTILERY SIM?!?!??!?!"""
@@ -26,7 +26,8 @@ Z_SPEED = 2.5
 TIME_BETWEEN_SPAWNS = 2000
 LAST_SPAWN_TIME = 0 
 TIME_DECREMENT = 0.95 # makes spawns more often as time goes by
-FASTEST_SPAWING = 220
+FASTEST_SPAWING = 300
+FLYING_SPAWNING_START = 10000 #ms
 
 SCORE = 0
 SCORE_PER_Z = 100
@@ -81,7 +82,7 @@ def createProjectile(starting_xy, angle, power=POWER):
 	trajectory = [round(cos(angle), 2), round(sin(angle), 2)] # GET FROM MOUSE_POS LATER!!!
 	vector = [direction * power for direction in trajectory]
 	xy = coordsFromCenter(starting_xy, PROJECTILE_SIZE)
-	projectile_id = sky.create_rectangle(xy, fill='red')
+	projectile_id = sky.create_rectangle(xy, fill='black', outline='red')
 	projectile = {"id": projectile_id, "vector": vector}
 	return projectile
 
@@ -101,7 +102,8 @@ def shoot(event):
 
 
 def createShrapnel(startintg_xy):
-	startintg_xy[1] = HEIGHT-5 # this ensures that shrapnel always spawns
+	if startintg_xy < HEIGHT-5:  # this ensures that shrapnel always spawns
+		startintg_xy[1] = HEIGHT-5 # even when i should be below the ground
 	for i in range(MAX_SHRAPNEL_COUNT - randint(0, 1)): # randomize number of shrapnel
 		angle = randint(50, 130)
 		angle = radians(angle)
@@ -168,9 +170,12 @@ def everythingProjectiles():
 		checkForCollision(shrapnel, is_shrapnel=False)
 
 
-def createZombie():
+def createZombie(flying=False):
 	global TIME_BETWEEN_SPAWNS
-	xy = coordsFromBottomLeft([WIDTH, STARTING_POINT[1]], Z_SIZE)
+	if flying:
+		xy = coordsFromBottomLeft([WIDTH, 250], Z_SIZE)
+	else:
+		xy = coordsFromBottomLeft([WIDTH, STARTING_POINT[1]], Z_SIZE)
 	z = sky.create_oval(xy, fill='dark green')
 	ZOMBIES.append(z)
 	if TIME_BETWEEN_SPAWNS > FASTEST_SPAWING:
@@ -222,16 +227,21 @@ window.bind("<ButtonRelease-1>", shoot) # shoot when in window
 sky.bind("<Motion>", aim) # only aim in when sky
 
 
+TIME_STARTED = time()
+
 while HP > 0:
 	everythingProjectiles()
 	if time() - LAST_SPAWN_TIME > TIME_BETWEEN_SPAWNS/1000:
-		createZombie()
+		if time() - TIME_STARTED > FLYING_SPAWNING_START/1000:
+			createZombie(flying=randint(0, 1))
+		else:
+			createZombie()
 		LAST_SPAWN_TIME = time()
 	moveEnemies()
 	if CURRENT_AMMO < MAX_AMMO:
 		tryToReload()
 	updateText()
 	window.update()
-	window.after(3)
+	window.after(3) # cant go lower/makes framerate too unstable
 
 window.mainloop()
