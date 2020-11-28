@@ -17,6 +17,7 @@ if __name__ == "__main__":
 	window.title("PEW PEW")
 	window.geometry(str(RESOLUTION[0]) + 'x' + str(RESOLUTION[1]))
 	game = Game(window, RESOLUTION)
-	game.loadMap()
+	game.load()
+	game.start()
 	# clearWindow(window)
 	window.mainloop()
