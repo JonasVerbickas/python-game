@@ -222,56 +222,56 @@ def tryToReload():
 		CURRENT_AMMO += 1
 
 
-def startGame(window, resolution):
-	global WIDTH
-	global HEIGHT
-	global LAST_SPAWN_TIME
-	global SKY
-	global GROUND
-	global txt_score
-	global txt_ammo
-	global txt_health
-	global player
-	global reticle
-	global wall1
 
-	HEIGHT = resolution[0]
-	print(HEIGHT)
-	WIDTH = resolution[1]
-	new_frame = Frame(window)
-	new_frame.pack()
-	SKY = Canvas(new_frame, width=WIDTH, height=HEIGHT*0.4, background='sky blue')
-	SKY.pack()
+global WIDTH
+global HEIGHT
+global LAST_SPAWN_TIME
+global SKY
+global GROUND
+global txt_score
+global txt_ammo
+global txt_health
+global player
+global reticle
+global wall1
 
-	GROUND = Canvas(new_frame, width=WIDTH, height=HEIGHT*0.4, background='pale green')
-	GROUND.pack()
+HEIGHT = resolution[0]
+print(HEIGHT)
+WIDTH = resolution[1]
+new_frame = Frame(window)
+new_frame.pack()
+SKY = Canvas(new_frame, width=WIDTH, height=HEIGHT*0.4, background='sky blue')
+SKY.pack()
 
-	txt_score = SKY.create_text(WIDTH/2, 20, text="Score: 0", font=("Arial", 20, 'bold'))
-	txt_ammo = SKY.create_text(WIDTH/2, 50, text="Ammo: 0", font=("Arial", 20, 'bold'))
-	txt_health = SKY.create_text(WIDTH/2, 80, text="Health: 0", font=("Arial", 20, 'bold'))
-	player = SKY.create_oval(STARTING_POINT[0], STARTING_POINT[1], STARTING_POINT[0] + PLAYER_SIZE, STARTING_POINT[1] + PLAYER_SIZE, fill="tomato")
-	reticle = SKY.create_line(0, 0, 0, 0, fill='red')
-	wall1 = SKY.create_rectangle(90, HEIGHT, 90+WALL_DIMEN[0], HEIGHT-WALL_DIMEN[1], fill='brown4')
+GROUND = Canvas(new_frame, width=WIDTH, height=HEIGHT*0.4, background='pale green')
+GROUND.pack()
 
-	SKY.bind("<ButtonRelease-1>", shoot) # shoot when in window
-	SKY.bind("<Motion>", aim) # only aim in when SKY
+txt_score = SKY.create_text(WIDTH/2, 20, text="Score: 0", font=("Arial", 20, 'bold'))
+txt_ammo = SKY.create_text(WIDTH/2, 50, text="Ammo: 0", font=("Arial", 20, 'bold'))
+txt_health = SKY.create_text(WIDTH/2, 80, text="Health: 0", font=("Arial", 20, 'bold'))
+player = SKY.create_oval(STARTING_POINT[0], STARTING_POINT[1], STARTING_POINT[0] + PLAYER_SIZE, STARTING_POINT[1] + PLAYER_SIZE, fill="tomato")
+reticle = SKY.create_line(0, 0, 0, 0, fill='red')
+wall1 = SKY.create_rectangle(90, HEIGHT, 90+WALL_DIMEN[0], HEIGHT-WALL_DIMEN[1], fill='brown4')
+
+SKY.bind("<ButtonRelease-1>", shoot) # shoot when in window
+SKY.bind("<Motion>", aim) # only aim in when SKY
 
 
-	TIME_STARTED = time()
+TIME_STARTED = time()
 
-	while HP > 0:
-		everythingProjectiles()
-		if time() - LAST_SPAWN_TIME > TIME_BETWEEN_SPAWNS/1000:
-			if time() - TIME_STARTED > FLYING_SPAWNING_START/1000:
-				createZombie(flying=randint(0, 1))
-			else:
-				createZombie()
-			LAST_SPAWN_TIME = time()
-		moveEnemies()
-		if CURRENT_AMMO < MAX_AMMO:
-			tryToReload()
-		updateText()
-		new_frame.update()
-		new_frame.after(3) # cant go lower/makes framerate too unstable
+while HP > 0:
+	everythingProjectiles()
+	if time() - LAST_SPAWN_TIME > TIME_BETWEEN_SPAWNS/1000:
+		if time() - TIME_STARTED > FLYING_SPAWNING_START/1000:
+			createZombie(flying=randint(0, 1))
+		else:
+			createZombie()
+		LAST_SPAWN_TIME = time()
+	moveEnemies()
+	if CURRENT_AMMO < MAX_AMMO:
+		tryToReload()
+	updateText()
+	new_frame.update()
+	new_frame.after(3) # cant go lower/makes framerate too unstable
 
-	return new_frame
+

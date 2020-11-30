@@ -1,4 +1,4 @@
-from tkinter import Frame, Canvas, Widget
+from tkinter import Frame, Canvas, messagebox
 from math import sqrt
 from random import randint
 from time import time
@@ -17,6 +17,17 @@ def outOfBounds(obj, bounds):
 			return True
 		else:
 			return False
+
+
+def collision(obj1, obj2):
+	coords1 = obj1.getCenter()
+	coords2 = obj2.getCenter()
+	dist_vec = calcDistanceVector(coords1, coords2)
+	dist = sqrt(dist_vec[0]**2+dist_vec[1]**2)
+	if dist < obj1.SIZE/2 + obj2.SIZE/2:
+		return True
+	else:
+		return False
 
 
 def shortenVector(vector, max_size):
@@ -47,7 +58,7 @@ class Object:
 class Reticle(Object):
 	SIZE = 50
 	OBJECT_WHERE_IT_STARTS = 0 # usually the player
-	LAST_AIM_SPOT = 0
+	LAST_AIM_SPOT = [SIZE, 0]
 
 	def aim(self, event=None):
 		if event != None:
@@ -81,8 +92,9 @@ class Projectile(Object):
 		self.ID = self.CANVAS.create_rectangle(xy, fill='black', outline='red')
 
 class Enemy(Object):
+	WORTH = 10
 	SIZE = 50
-	SPEED = 2
+	SPEED = 4
 	def create(self):
 		h = self.CANVAS.winfo_height()
 		w = self.CANVAS.winfo_width()
@@ -100,10 +112,14 @@ class ProjectileManager():
 		p.create(starting_xy, goal_xy)
 		ProjectileManager.PROJECTILES.append(p)
 	@staticmethod
+	def killProjectile(e):
+		ProjectileManager.CANVAS.delete(e.ID)
+		ProjectileManager.PROJECTILES.remove(e)
+	@staticmethod
 	def moveAllProjectiles():
 		w = ProjectileManager.CANVAS.winfo_width()
 		h = ProjectileManager.CANVAS.winfo_height()
-		for p in ProjectileManager.PROJECTILES:
+		for p in list(ProjectileManager.PROJECTILES):
 			if outOfBounds(p, [w, h]):
 				ProjectileManager.CANVAS.delete(p.ID)
 				ProjectileManager.PROJECTILES.remove(p)
@@ -129,21 +145,70 @@ class EnemyManager():
 			e.create()
 			EnemyManager.ENEMIES.append(e)
 			EnemyManager.LAST_SPAWN = time()
+
+	@staticmethod
+	def killEnemy(e):
+		EnemyManager.CANVAS.delete(e.ID)
+		EnemyManager.ENEMIES.remove(e)
+
 	@staticmethod
 	def moveEnemies():
-		for e in EnemyManager.ENEMIES:
-			EnemyManager.CANVAS.move(e.ID, -e.SPEED, 0)
+		w = EnemyManager.CANVAS.winfo_width()
+		h = EnemyManager.CANVAS.winfo_height()
+		for e in list(EnemyManager.ENEMIES):
+			if outOfBounds(e, [w+(e.SIZE*2), h]):
+				EnemyManager.killEnemy(e)
+			elif e.getXY()[0] < e.SIZE:
+				HealthTracker.hp -= 1
+				EnemyManager.killEnemy(e)
+
+			else:
+				for p in list(ProjectileManager.PROJECTILES):
+					if collision(p, e):
+						ScoreTracker.score += e.WORTH
+						EnemyManager.killEnemy(e)
+						ProjectileManager.killProjectile(p)
+						break
+				else:
+					EnemyManager.CANVAS.move(e.ID, -e.SPEED, 0)
 	@staticmethod
 	def manage():
 		EnemyManager.spawnEnemy()
 		EnemyManager.moveEnemies()
 
 
+class AmmoTracker():
+	MAX_AMMO = 5
+	CURRENT_AMMO = MAX_AMMO
+	SEC_TO_RELOAD = 0.5
+	RELOAD_START = 0
+
+	OBJ = 0 # id of the object whose ammo we are tracking
+
+	def __init__(self, obj):
+		self.OBJ = obj
+
+
+	def tryToReload(self):
+		if self.CURRENT_AMMO < self.MAX_AMMO:
+			if time() - self.RELOAD_START > self.SEC_TO_RELOAD:
+				self.CURRENT_AMMO += 1
+				self.RELOAD_START = time()
+
+
+	def shoot(self, event):
+		if self.CURRENT_AMMO > 0:
+			self.RELOAD_START = time()
+			self.CURRENT_AMMO -= 1
+			ProjectileManager.createProjectile(self.OBJ.getCenter(), goal_xy=[self.OBJ.RETICLE.getXY()[2], self.OBJ.RETICLE.getXY()[3]])
+
+
 class Player(Object):
-	HP = 5
 	SIZE = 45
 	RETICLE = 0
-	SPEED=8
+	SPEED = 8
+
+	AMMO_TRACKER = 0
 
 	def up(self, event):
 		if self.getXY()[1] > self.SIZE:
@@ -163,9 +228,41 @@ class Player(Object):
 		self.RETICLE.create(self)
 		window = self.CANVAS.master.master
 		print(window)
-		self.CANVAS.bind("<ButtonRelease-1>", lambda A: ProjectileManager.createProjectile(self.getCenter(), goal_xy=[self.RETICLE.getXY()[2], self.RETICLE.getXY()[3]]))
+		self.AMMO_TRACKER = AmmoTracker(self)
+		self.CANVAS.bind("<ButtonRelease-1>", self.AMMO_TRACKER.shoot)
 		window.bind("w", self.up)
 		window.bind("s", self.down)
+
+
+class HealthTracker:
+	hp = 1
+
+class ScoreTracker:
+	score = 0
+
+
+class UI:
+	# from global
+	CANVAS = 0
+	PLAYER = 0
+
+	# only local
+	score = 0
+	ammo = 0
+	health = 0
+
+	def __init__(self, canvas, player):
+		self.CANVAS = canvas
+		self.PLAYER = player
+		self.score = self.CANVAS.create_text(500, 20, text="Score: 0", font=("Arial", 20, 'bold'))
+		self.ammo = self.CANVAS.create_text(500, 50, text="Ammo: 0", font=("Arial", 20, 'bold'))
+		self.health = self.CANVAS.create_text(500, 80, text="Health: 0", font=("Arial", 20, 'bold'))
+
+	def update(self):	
+		self.CANVAS.itemconfig(self.score, text="Score: " + str(ScoreTracker.score))
+		self.CANVAS.itemconfig(self.ammo, text="Ammo: " + str(self.PLAYER.AMMO_TRACKER.CURRENT_AMMO))
+		self.CANVAS.itemconfig(self.health, text="Health: " + str(HealthTracker.hp))
+
 
 
 class Game:
@@ -175,13 +272,13 @@ class Game:
 	GAME_FRAME = 0
 
 	# game consts
-	TIME_BETWEEN_FRAMES = 3 #ms
+	TIME_BETWEEN_FRAMES = 3#ms
 
 	# assets
 	sky = 0
 	player = 0
 	reticle = 0
-	wall1 = 0
+	ui = 0
 
 	def __init__(self, window, resolution):
 		self.RESOLUTION = resolution
@@ -193,18 +290,27 @@ class Game:
 		self.sky = Canvas(self.GAME_FRAME, width=self.RESOLUTION[0], height=self.RESOLUTION[1], background='sky blue')
 		self.sky.pack()
 
-		ProjectileManager(self.sky)
-		EnemyManager(self.sky)
-
 		starting_point = (50, self.RESOLUTION[1]/2)
 		self.player = Player(self.sky)
 		self.player.create(starting_point)
 
 
-	def start(self):
-		while self.player.HP > 0:
+		ProjectileManager(self.sky)
+		EnemyManager(self.sky)
+		self.ui = UI(self.sky, self.player)
+
+	def gameOver(self):
+		messagebox.showinfo("GAME OVER!", "GAME OVER!")
+
+	def startloop(self):
+		while HealthTracker.hp > 0:
+			self.player.AMMO_TRACKER.tryToReload()
 			ProjectileManager.manage()
 			EnemyManager.manage()
-			EnemyManager.manage()
+			self.ui.update()
 			self.GAME_FRAME.update()
 			self.GAME_FRAME.after(self.TIME_BETWEEN_FRAMES)
+		self.gameOver()
+
+
+
