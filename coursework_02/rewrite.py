@@ -275,11 +275,6 @@ class UI:
 
 
 class Game:
-	# window consts
-	RESOLUTION = (0, 0)
-	WINDOW = 0
-	GAME_FRAME = 0
-
 	# game consts
 	TIME_BETWEEN_FRAMES = 3#ms
 
@@ -289,15 +284,13 @@ class Game:
 	reticle = 0
 	ui = 0
 
-	def __init__(self, window, resolution):
+	def __init__(self, frame, resolution):
 		self.RESOLUTION = resolution
-		self.window = window
+		self.frame = frame
 		self.create()
 
 	def loadAssets(self):
-		self.GAME_FRAME = Frame(self.window)
-		self.GAME_FRAME.pack()
-		self.sky = Canvas(self.GAME_FRAME, width=self.RESOLUTION[0], height=self.RESOLUTION[1], background='sky blue')
+		self.sky = Canvas(self.frame, width=self.RESOLUTION[0], height=self.RESOLUTION[1], background='sky blue')
 		self.sky.pack()
 
 		starting_point = (50, self.RESOLUTION[1]/2)
@@ -317,8 +310,8 @@ class Game:
 			ProjectileManager.manage()
 			EnemyManager.manage()
 			self.ui.update()
-			self.GAME_FRAME.update()
-			self.GAME_FRAME.after(self.TIME_BETWEEN_FRAMES)
+			self.frame.update()
+			self.frame.after(self.TIME_BETWEEN_FRAMES)
 
 		leaderboard = open('leaderboard.txt', 'a')
 		leaderboard.write("Jonas:" + str(ScoreTracker.score) + '\n')

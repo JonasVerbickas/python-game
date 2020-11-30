@@ -9,3 +9,6 @@ Jonas:40
 Jonas:420
 Jonas:30
 Jonas:10
+Jonas:190
+Jonas:70
+Jonas:80

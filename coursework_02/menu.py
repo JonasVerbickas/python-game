@@ -1,18 +1,15 @@
-from tkinter import Canvas, Button, Frame
+from tkinter import Canvas, Button
 
 class Menu():
-	def __init__(self, window, resolution, windowManager):
-		self.window= window
+	def __init__(self, frame, resolution, windowManager):
+		self.frame= frame
 		self.resolution = resolution
 		self.windowManager = windowManager
 		self.create()
 
 
 	def create(self):
-		new_frame = Frame(self.window)
-		new_frame.pack()
-
-		canvas = Canvas(new_frame, width=self.resolution[0], height=self.resolution[1], bg='black')
+		canvas = Canvas(self.frame, width=self.resolution[0], height=self.resolution[1], bg='black')
 		canvas.pack()
 
 
