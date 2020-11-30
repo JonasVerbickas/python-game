@@ -1,5 +1,5 @@
 from tkinter import Frame, messagebox
-from rewrite import Game
+from game import Game
 from menu import Menu
 from leaderboard import LeaderBoard
 
