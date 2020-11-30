@@ -29,7 +29,9 @@ class Pause():
 			canvas.create_text(100, 32, text="PAUSED", font=("Arial", 32))
 			resume_button = Button(canvas, text='Resume', command=self.resume)
 			resume_button.place(relx=0.3, rely=0.7)
-			Pause.PAUSE_WINDOW.lift()
+			while Pause.PAUSE_WINDOW != 0:
+				Pause.PAUSE_WINDOW.lift()
+				Pause.PAUSE_WINDOW.update()
 			Pause.PAUSE_WINDOW.mainloop()
 
 def outOfBounds(obj, bounds):

@@ -17,6 +17,6 @@ class Menu():
 		leaderboard_button = Button(canvas, text="LEADERBOARD", padx=60, pady=30, bg='black', fg='yellow', command=self.windowManager.leaderboard)
 		leaderboard_button.place(relx=0.4, rely=0.4)
 
-		options_button = Button(canvas, text="OPTIONS", padx=60, pady=30, bg='black', fg='yellow')
+		options_button = Button(canvas, text="OPTIONS", padx=60, pady=30, bg='black', fg='yellow', command=self.windowManager.options)
 		options_button.place(relx=0.4, rely=0.6)
 

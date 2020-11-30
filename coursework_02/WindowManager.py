@@ -2,6 +2,7 @@ from tkinter import Frame, messagebox
 from game import Game
 from menu import Menu
 from leaderboard import LeaderBoard
+from options import Options
 
 class WindowManager():
 	def __init__(self, window, resolution):
@@ -44,3 +45,7 @@ class WindowManager():
 		new_frame = self.createCleanFrame()
 		leaderboard = LeaderBoard(self.window, self)
 		leaderboard.create()
+
+	def options(self):
+		new_frame = self.createCleanFrame()
+		options = Options(new_frame, self)
