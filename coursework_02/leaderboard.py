@@ -1,0 +1,52 @@
+from tkinter import Frame, Canvas, Button
+
+class LeaderBoard():
+	def getSortedListOfLeaders(self):
+		list_of_leaders = []
+		f = open("leaderboard.txt", 'r')
+		for key_val in f.read().strip().split('\n'):
+			key_val_split = key_val.split(':')
+			for combo in list(list_of_leaders):
+				if int(key_val_split[1]) > int(combo[1]):
+					insert_index = list_of_leaders.index(combo)
+					list_of_leaders.insert(insert_index, key_val_split)
+					break
+			else:
+				list_of_leaders.append(key_val_split)
+		f.close()
+		return list_of_leaders
+
+	def leaderList2String(self, leader_list):
+		output = ""
+		for i in range(len(leader_list)): # only the TOP 9
+			if i >= 9:
+				break
+			output += ("%d %s\n") % (i+1, " ".join(leader_list[i]))
+		return output
+
+
+	def getResolution(self):
+		return [self.window.winfo_width(), self.window.winfo_height()]
+
+
+	def __init__(self, window, resolution, windowManager):
+		self.window = window
+		self.resolution = resolution
+		self.windowManager = windowManager
+		self.create()
+
+
+	def create(self):
+		new_frame = Frame(self.window)
+		new_frame.pack()
+		canvas = Canvas(new_frame, width=self.getResolution()[0], height=self.getResolution()[1], bg='dark red')
+		canvas.pack()
+
+		back_button = Button(canvas, text="BACK", command=self.windowManager.menu)
+		back_button.place(relx=0.05, rely=0.05)
+
+		list_of_leaders = self.getSortedListOfLeaders()
+		string_of_leaders = self.leaderList2String(list_of_leaders)
+		title = canvas.create_text(self.getResolution()[0]/2, 50, text="LEADERBOARD", fill='white', font=('Arial', 32))
+		leaderboard_text = canvas.create_text(self.getResolution()[0]/2, self.getResolution()[1]/2, text=string_of_leaders, fill='white', font=('Arial', 32))
+

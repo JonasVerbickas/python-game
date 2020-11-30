@@ -1,25 +1,37 @@
+from tkinter import messagebox
 from rewrite import Game
 from menu import Menu
+from leaderboard import LeaderBoard
 
 class WindowManager():
-	window = 0
-	resolution = 0
-	usable_frames = ['menu', 'game']
-	current_frame = 0
-
 	def __init__(self, window, resolution):
 		self.window= window
 		self.resolution = resolution
+		self.menu()
 
 	def clearWindow(self):
 		for widget in self.window.winfo_children():
 			widget.destroy()
 
-
-	def load(frame_name):
-		if frame_name in usable_frames:
-			self.clearWindow()
-			if frame_name == 'game':
-				current_frame = Game(wi)
+	def gameOver(self):
+		ans = messagebox.askquestion("GAME OVER!", "Do you want to try again?")
+		if ans.lower() == 'yes':
+			self.game()
 		else:
-			raise ValueError("No such frame can be created!")
+			self.menu()
+
+	def game(self):
+		self.clearWindow()
+		game = Game(self.window, self.resolution)
+		self.gameOver()
+
+
+	def menu(self):
+		self.clearWindow()
+		menu = Menu(self.window, self.resolution, self)
+
+
+	def leaderboard(self):
+		self.clearWindow()
+		leaderboard = LeaderBoard(self.window, self.resolution, self)
+		leaderboard.create()

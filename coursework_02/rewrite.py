@@ -109,6 +109,7 @@ class ProjectileManager():
 	PROJECTILES = []
 	def __init__(self,canvas):
 		ProjectileManager.CANVAS = canvas
+		ProjectileManager.PROJECTILES = []
 	@staticmethod
 	def createProjectile(starting_xy, goal_xy):
 		p = Projectile(ProjectileManager.CANVAS)
@@ -140,6 +141,7 @@ class EnemyManager():
 	def __init__(self, canvas):
 		EnemyManager.CANVAS = canvas
 		EnemyManager.LAST_SPAWN = time()
+		EnemyManager.ENEMIES = []
 	@staticmethod
 	def spawnEnemy():
 		if time()-EnemyManager.LAST_SPAWN > EnemyManager.SPAWN_INTERVAL:
@@ -244,6 +246,8 @@ class HealthTracker:
 
 class ScoreTracker:
 	score = 0
+	def __init__(self):
+		ScoreTracker.score = 0
 
 
 class UI:
@@ -288,6 +292,7 @@ class Game:
 	def __init__(self, window, resolution):
 		self.RESOLUTION = resolution
 		self.window = window
+		self.create()
 
 	def loadAssets(self):
 		self.GAME_FRAME = Frame(self.window)
@@ -295,13 +300,12 @@ class Game:
 		self.sky = Canvas(self.GAME_FRAME, width=self.RESOLUTION[0], height=self.RESOLUTION[1], background='sky blue')
 		self.sky.pack()
 
-
-
 		starting_point = (50, self.RESOLUTION[1]/2)
 		self.player = Player(self.sky)
 		self.player.create(starting_point)
 
 		HealthTracker()
+		ScoreTracker()
 		ProjectileManager(self.sky)
 		EnemyManager(self.sky)
 		self.ui = UI(self.sky, self.player)
@@ -315,6 +319,10 @@ class Game:
 			self.ui.update()
 			self.GAME_FRAME.update()
 			self.GAME_FRAME.after(self.TIME_BETWEEN_FRAMES)
+
+		leaderboard = open('leaderboard.txt', 'a')
+		leaderboard.write("Jonas:" + str(ScoreTracker.score) + '\n')
+		leaderboard.close()
 
 	def create(self):
 		self.loadAssets()
