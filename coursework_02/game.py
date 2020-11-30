@@ -1,4 +1,4 @@
-from tkinter import Frame, Canvas
+from tkinter import Tk, Frame, Canvas, messagebox, Button
 from math import sqrt
 from random import randint
 from time import time
@@ -11,6 +11,26 @@ def calcDistanceVector(point1, point2):
 
 def createCoordsFromCenter(xy, size):
 	return [xy[0]-size/2, xy[1]+size/2, xy[0]+size/2, xy[1]-size/2]
+
+
+class Pause():
+	PAUSE_WINDOW = 0
+	def resume(self):
+		Pause.PAUSE_WINDOW.quit()
+		Pause.PAUSE_WINDOW.destroy()
+		Pause.PAUSE_WINDOW = 0
+	def __init__(self, event):
+		if Pause.PAUSE_WINDOW == 0: # not paused
+			Pause.PAUSE_WINDOW = Tk()
+			Pause.PAUSE_WINDOW.geometry("200x100+500+300")
+			Pause.PAUSE_WINDOW.overrideredirect(True)
+			canvas = Canvas(Pause.PAUSE_WINDOW)
+			canvas.pack()
+			canvas.create_text(100, 32, text="PAUSED", font=("Arial", 32))
+			resume_button = Button(canvas, text='Resume', command=self.resume)
+			resume_button.place(relx=0.3, rely=0.7)
+			Pause.PAUSE_WINDOW.lift()
+			Pause.PAUSE_WINDOW.mainloop()
 
 def outOfBounds(obj, bounds):
 		# horizontal
@@ -236,6 +256,7 @@ class Player(Object):
 		self.CANVAS.bind("<ButtonRelease-1>", self.AMMO_TRACKER.shoot)
 		window.bind("w", self.up)
 		window.bind("s", self.down)
+		window.bind("<Escape>", Pause)
 
 
 class HealthTracker:

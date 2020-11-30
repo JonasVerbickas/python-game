@@ -37,7 +37,7 @@ class WindowManager():
 
 	def menu(self):
 		new_frame = self.createCleanFrame()
-		Menu(new_frame, self.resolution, self)
+		Menu(new_frame, self)
 
 
 	def leaderboard(self):
