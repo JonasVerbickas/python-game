@@ -140,7 +140,6 @@ class EnemyManager():
 	@staticmethod
 	def spawnEnemy():
 		if time()-EnemyManager.LAST_SPAWN > EnemyManager.SPAWN_INTERVAL:
-			print("SPAWNED")
 			e = Enemy(EnemyManager.CANVAS)
 			e.create()
 			EnemyManager.ENEMIES.append(e)
@@ -284,7 +283,7 @@ class Game:
 		self.RESOLUTION = resolution
 		self.window = window
 
-	def load(self):
+	def loadAssets(self):
 		self.GAME_FRAME = Frame(self.window)
 		self.GAME_FRAME.pack()
 		self.sky = Canvas(self.GAME_FRAME, width=self.RESOLUTION[0], height=self.RESOLUTION[1], background='sky blue')
@@ -302,7 +301,7 @@ class Game:
 	def gameOver(self):
 		messagebox.showinfo("GAME OVER!", "GAME OVER!")
 
-	def startloop(self):
+	def loop(self):
 		while HealthTracker.hp > 0:
 			self.player.AMMO_TRACKER.tryToReload()
 			ProjectileManager.manage()
@@ -312,5 +311,7 @@ class Game:
 			self.GAME_FRAME.after(self.TIME_BETWEEN_FRAMES)
 		self.gameOver()
 
-
+	def create(self):
+		self.loadAssets()
+		self.loop()
 

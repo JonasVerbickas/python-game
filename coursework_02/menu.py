@@ -1,16 +1,42 @@
 from tkinter import Canvas, Button, Frame
+from rewrite import Game
 
-def create(window):
-	new_frame = Frame(window)
-	new_frame.pack()
+class Menu():
+	window = 0
+	resolution = 0
 
-	start_button = Button(new_frame, text="START", width="300", height="300")
-	start_button.pack()
+	def __init__(self, window, resolution):
+		self.window= window
+		self.resolution = resolution
 
-	options_button = Button(new_frame, text="OPTIONS")
-	options_button.pack()
 
-	exit_button = Button(new_frame, text="EXIT")
-	exit_button.pack()
+	def clearWindow(self):
+		for widget in self.window.winfo_children():
+			widget.destroy()
 
-	return new_frame
+
+	def startGame(self):
+		self.clearWindow()
+		game = Game(self.window, self.resolution)
+		game.create()
+
+
+	def create(self):
+		new_frame = Frame(self.window)
+		new_frame.pack()
+
+		canvas = Canvas(new_frame, width=self.resolution[0], height=self.resolution[1], bg='black')
+		canvas.pack()
+
+
+		start_button = Button(canvas, text="START", padx=60, pady=30, bg='black', fg='yellow', command=self.startGame)
+		start_button.place(relx=0.4, rely=0.2)
+
+		options_button = Button(canvas, text="OPTIONS", padx=60, pady=30, bg='black', fg='yellow')
+		options_button.place(relx=0.4, rely=0.4)
+
+		exit_button = Button(canvas, text="EXIT", padx=60, pady=30, bg='black', fg='yellow')
+		exit_button.place(relx=0.4, rely=0.6)
+
+		return new_frame
+

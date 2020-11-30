@@ -1,25 +1,14 @@
-from tkinter import Tk, Frame
-import menu
-from rewrite import Game
+from tkinter import Tk
+from menu import Menu
 
 
 RESOLUTION = (1280, 720)
 
 
-def clearWindow(window):
-	print(window.winfo_children())
-	for widget in window.winfo_children():
-		print(widget.winfo_children())
-		widget.destroy()
-
 if __name__ == "__main__":
 	window = Tk()
 	window.title("PEW PEW")
 	window.geometry(str(RESOLUTION[0]) + 'x' + str(RESOLUTION[1]))
-	game = Game(window, RESOLUTION)
-	game.load()
-	game.startloop()
-	print("DONE")
-	clearWindow(window)
-	menu.create(window)
+	menu = Menu(window, RESOLUTION)
+	menu.create()
 	window.mainloop()
