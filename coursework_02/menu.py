@@ -1,4 +1,4 @@
-from tkinter import Canvas, Button, Frame
+from tkinter import Canvas, Button, Frame, messagebox
 from rewrite import Game
 
 class Menu():
@@ -8,6 +8,7 @@ class Menu():
 	def __init__(self, window, resolution):
 		self.window= window
 		self.resolution = resolution
+		self.create()
 
 
 	def clearWindow(self):
@@ -15,10 +16,17 @@ class Menu():
 			widget.destroy()
 
 
+	def gameOver(self):
+		ans = messagebox.askquestion("GAME OVER!", "Do you want to try again?")
+		if ans.lower() == 'yes':
+			self.startGame()
+			
+
 	def startGame(self):
 		self.clearWindow()
 		game = Game(self.window, self.resolution)
 		game.create()
+		self.gameOver()
 
 
 	def create(self):

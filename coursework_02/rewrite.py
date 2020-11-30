@@ -1,7 +1,10 @@
-from tkinter import Frame, Canvas, messagebox
+from tkinter import Frame, Canvas
 from math import sqrt
 from random import randint
 from time import time
+
+MAX_AMMO = 5
+MAX_HEALTH = 2
 
 def calcDistanceVector(point1, point2):
 	return (point2[0] - point1[0], point2[1] - point1[1])
@@ -177,8 +180,7 @@ class EnemyManager():
 
 
 class AmmoTracker():
-	MAX_AMMO = 5
-	CURRENT_AMMO = MAX_AMMO
+	CURRENT_AMMO = 0
 	SEC_TO_RELOAD = 0.5
 	RELOAD_START = 0
 
@@ -186,10 +188,11 @@ class AmmoTracker():
 
 	def __init__(self, obj):
 		self.OBJ = obj
+		self.CURRENT_AMMO = MAX_AMMO
 
 
 	def tryToReload(self):
-		if self.CURRENT_AMMO < self.MAX_AMMO:
+		if self.CURRENT_AMMO < MAX_AMMO:
 			if time() - self.RELOAD_START > self.SEC_TO_RELOAD:
 				self.CURRENT_AMMO += 1
 				self.RELOAD_START = time()
@@ -235,6 +238,9 @@ class Player(Object):
 
 class HealthTracker:
 	hp = 1
+	def __init__(self):
+		HealthTracker.hp = MAX_HEALTH
+
 
 class ScoreTracker:
 	score = 0
@@ -289,17 +295,17 @@ class Game:
 		self.sky = Canvas(self.GAME_FRAME, width=self.RESOLUTION[0], height=self.RESOLUTION[1], background='sky blue')
 		self.sky.pack()
 
+
+
 		starting_point = (50, self.RESOLUTION[1]/2)
 		self.player = Player(self.sky)
 		self.player.create(starting_point)
 
-
+		HealthTracker()
 		ProjectileManager(self.sky)
 		EnemyManager(self.sky)
 		self.ui = UI(self.sky, self.player)
 
-	def gameOver(self):
-		messagebox.showinfo("GAME OVER!", "GAME OVER!")
 
 	def loop(self):
 		while HealthTracker.hp > 0:
@@ -309,7 +315,6 @@ class Game:
 			self.ui.update()
 			self.GAME_FRAME.update()
 			self.GAME_FRAME.after(self.TIME_BETWEEN_FRAMES)
-		self.gameOver()
 
 	def create(self):
 		self.loadAssets()

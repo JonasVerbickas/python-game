@@ -9,6 +9,5 @@ if __name__ == "__main__":
 	window = Tk()
 	window.title("PEW PEW")
 	window.geometry(str(RESOLUTION[0]) + 'x' + str(RESOLUTION[1]))
-	menu = Menu(window, RESOLUTION)
-	menu.create()
+	current_frame = Menu(window, RESOLUTION)
 	window.mainloop()
