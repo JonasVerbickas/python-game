@@ -8,7 +8,7 @@ from os.path import isfile
 
 MAX_AMMO = 5
 MAX_HEALTH = 2
-TIME_BETWEEN_FRAMES = 5#ms
+TIME_BETWEEN_FRAMES = 4#ms
 FASTEST_SPAWNING = 0.3#sec
 INFINITE_AMMO = "kilburn"
 
@@ -353,7 +353,6 @@ class Game:
 		if event.char.isalnum():
 			# check if the button does something
 			if event.char in self.options.values():
-				print("TRUE")
 				if self.options['up'] == event.char:
 					self.player.up()
 				elif self.options['down'] == event.char:
@@ -363,7 +362,6 @@ class Game:
 
 			# add to cheat string
 			self.current_cheat_string += event.char
-			print(self.current_cheat_string, "vs", INFINITE_AMMO[0:len(self.current_cheat_string)])
 			if INFINITE_AMMO[0:len(self.current_cheat_string)] != self.current_cheat_string:
 				self.current_cheat_string = event.char
 
@@ -425,7 +423,7 @@ class Game:
 			if isfile("save.json"):
 				remove("save.json")
 			leaderboard = open('leaderboard.txt', 'a')
-			leaderboard.write("Jonas:" + str(ScoreTracker.score) + '\n')
+			leaderboard.write(self.windowManager.player_name + ":" + str(ScoreTracker.score) + '\n')
 			leaderboard.close()
 			self.windowManager.gameOver()
 

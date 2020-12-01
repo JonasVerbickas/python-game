@@ -8,6 +8,7 @@ from json import load
 
 class WindowManager():
 	def __init__(self, window, resolution):
+		self.player_name = "ANON"
 		self.window= window
 		self.resolution = resolution
 		self.boss_image = PhotoImage(file='bosskey.gif')
