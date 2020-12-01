@@ -57,14 +57,14 @@ class Options():
 		canvas.create_text(self.windowManager.getResolution()[0]/2, 32, text="OPTIONS", font=("Arial", 32))
 		self.options = self.getOptions()
 		
-		up_button = Button(canvas, text=("Move Up: '%s'" % (self.options['up'])), command=self.waitForNewUp)
+		up_button = Button(canvas, text=("Move Up: '%s'" % (self.options['up'])), command=self.waitForNewUp, bg="sky blue")
 		up_button.place(relx=0.45, rely=0.3)
 
-		down_button = Button(canvas, text=("Move Down: '%s'" % (self.options['down'])), command=self.waitForNewDown)
+		down_button = Button(canvas, text=("Move Down: '%s'" % (self.options['down'])), command=self.waitForNewDown, bg="sky blue")
 		down_button.place(relx=0.45, rely=0.4)
 
-		down_button = Button(canvas, text=("Boss Key: '%s'" % (self.options['bosskey'])), command=self.waitForNewBossKey)
+		down_button = Button(canvas, text=("Boss Key: '%s'" % (self.options['bosskey'])), command=self.waitForNewBossKey, bg="sky blue")
 		down_button.place(relx=0.45, rely=0.5)
 
-		back_button = Button(canvas, text="BACK", command=self.windowManager.menu)
+		back_button = Button(canvas, text="BACK", command=self.windowManager.menu, bg="sky blue")
 		back_button.place(relx=0.15, rely=0.05)

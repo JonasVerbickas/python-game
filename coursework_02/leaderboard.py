@@ -21,7 +21,7 @@ class LeaderBoard():
 		for i in range(len(leader_list)): # only the TOP 9
 			if i >= 9:
 				break
-			output += ("%d %s\n") % (i+1, " ".join(leader_list[i]))
+			output += ("%d. %s\n") % (i+1, ":  ".join(leader_list[i]))
 		return output
 
 
@@ -37,7 +37,7 @@ class LeaderBoard():
 
 		canvas.create_image(0, 0, image=self.windowManager.menu_image, anchor=NW)
 
-		back_button = Button(canvas, text="BACK", command=self.windowManager.menu)
+		back_button = Button(canvas, text="BACK", command=self.windowManager.menu, bg="sky blue")
 		back_button.place(relx=0.15, rely=0.05)
 
 		list_of_leaders = self.getSortedListOfLeaders()

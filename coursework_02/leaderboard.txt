@@ -75,3 +75,9 @@ Jonas:180
 Jonas:40
 Jonas:160
 Jonas:160
+Jonas:0
+Jonas:600
+Jonas:260
+Jonas:10
+Jonas:0
+Jonas:0

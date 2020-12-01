@@ -3,9 +3,14 @@ from math import sqrt
 from random import randint
 from time import time
 from json import load, dumps
+from os import remove
+from os.path import isfile
 
 MAX_AMMO = 5
 MAX_HEALTH = 2
+TIME_BETWEEN_FRAMES = 5#ms
+FASTEST_SPAWNING = 0.3#sec
+INFINITE_AMMO = "kilburn"
 
 def calcDistanceVector(point1, point2):
 	return (point2[0] - point1[0], point2[1] - point1[1])
@@ -17,6 +22,7 @@ def createCoordsFromCenter(xy, size):
 class Pause():
 	PAUSE_WINDOW = 0
 	def resume(self):
+		self.game.bindKeys()
 		Pause.PAUSE_WINDOW.quit()
 		Pause.PAUSE_WINDOW.destroy()
 		Pause.PAUSE_WINDOW = 0
@@ -29,6 +35,7 @@ class Pause():
 
 	def __init__(self, event, game):
 		self.game = game
+		self.game.unbindKeys()
 		if Pause.PAUSE_WINDOW == 0: # not paused
 			Pause.PAUSE_WINDOW = Tk()
 			Pause.PAUSE_WINDOW.geometry("200x200+500+300")
@@ -120,7 +127,6 @@ class Reticle(Object):
 		self.OBJECT_WHERE_IT_STARTS = starting_object
 		xy = (starting_object.getCenter()[0], starting_object.getCenter()[1], starting_object.getCenter()[0]+self.SIZE, starting_object.getCenter()[1])
 		self.ID = self.CANVAS.create_line(xy, fill='red')
-		self.CANVAS.master.master.bind("<Motion>", self.aim)
 
 class Projectile(Object):
 	SPEED = 15
@@ -190,6 +196,8 @@ class EnemyManager():
 			e.create(xy)
 			EnemyManager.ENEMIES.append(e)
 			EnemyManager.LAST_SPAWN = time()
+			if EnemyManager.SPAWN_INTERVAL > FASTEST_SPAWNING:
+				EnemyManager.SPAWN_INTERVAL *= 0.99
 
 	@staticmethod
 	def killEnemy(e):
@@ -250,12 +258,12 @@ class Player(Object):
 	SIZE = 45
 	SPEED = 10
 
-	def up(self, event):
+	def up(self):
 		if self.getXY()[1] > self.SIZE:
 			self.CANVAS.move(self.ID, 0, -self.SPEED)
 			self.RETICLE.aim() # refresh aim
 
-	def down(self, event):
+	def down(self):
 		h = self.CANVAS.winfo_height()
 		if self.getXY()[1] < h-self.SIZE*2:
 			self.CANVAS.move(self.ID, 0, self.SPEED)
@@ -296,10 +304,8 @@ class UI:
 
 
 class Game:
-	# game consts
-	TIME_BETWEEN_FRAMES = 3#ms
-
 	def __init__(self, frame, windowManager, loadSave=False):
+		self.current_cheat_string = ""
 		self.SAVE_AND_MENU = False
 		self.SAVE_AND_BOSSKEY = False
 		self.windowManager = windowManager
@@ -311,22 +317,22 @@ class Game:
 
 	def bindKeys(self):
 		with open("options.json", 'r') as f:
-			options = load(f)
+			self.options = load(f)
 		window = self.frame.master
-		window.bind(options['up'], self.player.up)
-		window.bind(options['down'], self.player.down)
 		window.bind("<Escape>", self.pause)
-		window.bind(options['bosskey'], self.saveAndBosskey)
-		self.player.CANVAS.bind("<ButtonRelease-1>", self.player.AMMO_TRACKER.shoot)
+		window.bind("<ButtonRelease-1>", self.player.AMMO_TRACKER.shoot)
+		window.bind("<Motion>", self.player.RETICLE.aim)
+		window.bind("<Key>", self.recordInput)
+		window.unbind(self.options['bosskey'])
 
 	def unbindKeys(self):
 		with open('options.json', 'r') as f:
 			options = load(f)
 		window = self.frame.master
-		window.unbind(options['up'])
-		window.unbind(options['down'])
 		window.unbind("<Escape>")
+		window.unbind("<ButtonRelease-1>")
 		window.unbind("<Motion>")
+		window.unbind("<Key>")
 
 	def createGlobalStatTrackers(self):
 		ProjectileManager(self.sky, self.windowManager)
@@ -340,8 +346,29 @@ class Game:
 	def saveAndMenu(self):
 		self.SAVE_AND_MENU = True
 
-	def saveAndBosskey(self, event):
+	def saveAndBosskey(self):
 		self.SAVE_AND_BOSSKEY = True
+
+	def recordInput(self, event):
+		if event.char.isalnum():
+			# check if the button does something
+			if event.char in self.options.values():
+				print("TRUE")
+				if self.options['up'] == event.char:
+					self.player.up()
+				elif self.options['down'] == event.char:
+					self.player.down()
+				elif self.options['bosskey'] == event.char:
+					self.saveAndBosskey()
+
+			# add to cheat string
+			self.current_cheat_string += event.char
+			print(self.current_cheat_string, "vs", INFINITE_AMMO[0:len(self.current_cheat_string)])
+			if INFINITE_AMMO[0:len(self.current_cheat_string)] != self.current_cheat_string:
+				self.current_cheat_string = event.char
+
+			elif INFINITE_AMMO == self.current_cheat_string:
+				self.player.AMMO_TRACKER.current_ammo = 9999
 
 
 	def initialAssetLoad(self):
@@ -385,7 +412,7 @@ class Game:
 			EnemyManager.manage()
 			self.ui.update()
 			self.frame.update()
-			self.frame.after(self.TIME_BETWEEN_FRAMES)
+			self.frame.after(TIME_BETWEEN_FRAMES)
 
 		self.unbindKeys()
 		if self.SAVE_AND_MENU:
@@ -395,11 +422,12 @@ class Game:
 			self.saveGameToFile()
 			self.windowManager.openBossKeyInGame()
 		else:
+			if isfile("save.json"):
+				remove("save.json")
 			leaderboard = open('leaderboard.txt', 'a')
 			leaderboard.write("Jonas:" + str(ScoreTracker.score) + '\n')
 			leaderboard.close()
 			self.windowManager.gameOver()
-
 
 	def save(self):
 		pass
