@@ -106,9 +106,9 @@ class Reticle(Object):
 	def aim(self, event=None):
 		if event != None:
 			dist_vec = self.OBJECT_WHERE_IT_STARTS.distanceBetweenSelfAndPoint([event.x, event.y])
-			self.LAST_AIM_SPOT = event
+			self.LAST_AIM_SPOT = [event.x, event.y]
 		else:
-			dist_vec = self.OBJECT_WHERE_IT_STARTS.distanceBetweenSelfAndPoint([self.LAST_AIM_SPOT.x, self.LAST_AIM_SPOT.y])
+			dist_vec = self.OBJECT_WHERE_IT_STARTS.distanceBetweenSelfAndPoint([self.LAST_AIM_SPOT[0], self.LAST_AIM_SPOT[1]])
 		dist_vec = shortenVector(dist_vec, self.SIZE)
 		if dist_vec[0] > 0:
 			player_coords = self.OBJECT_WHERE_IT_STARTS.getCenter()
@@ -249,7 +249,7 @@ class AmmoTracker():
 
 class Player(Object):
 	SIZE = 45
-	SPEED = 8
+	SPEED = 10
 
 	def up(self, event):
 		if self.getXY()[1] > self.SIZE:
@@ -300,11 +300,13 @@ class Game:
 	# game consts
 	TIME_BETWEEN_FRAMES = 3#ms
 
-	def __init__(self, frame, windowManager):
+	def __init__(self, frame, windowManager, loadSave=False):
 		self.BREAK_TO_SAVE = False
 		self.windowManager = windowManager
 		self.frame = frame
 		self.initialAssetLoad()
+		if loadSave:
+			self.loadFromFile()
 		self.loop()
 
 	def pause(self, event):
@@ -344,6 +346,15 @@ class Game:
 		with open("save.json", 'w') as f:
 			f.write(dumps(data))
 
+
+	def loadFromFile(self):
+		with open("save.json", 'r') as f:
+			data = load(f)
+		xy = createCoordsFromCenter(data['player'], self.player.SIZE)
+		self.sky.coords(self.player.ID, xy[0],xy[1],xy[2],xy[3])
+		HealthTracker.hp = data['hp']
+		ScoreTracker.score = data['score']
+		self.player.AMMO_TRACKER.current_ammo = data['ammo']
 
 	def loop(self):
 		while HealthTracker.hp > 0 and not self.BREAK_TO_SAVE:

@@ -34,6 +34,10 @@ class WindowManager():
 		self.game_frame = self.createCleanFrame()
 		game = Game(self.game_frame, self)
 
+	def loadSavedGame(self):
+		self.game_frame = self.createCleanFrame()
+		game = Game(self.game_frame, self, True)
+
 	def menu(self):
 		new_frame = self.createCleanFrame()
 		Menu(new_frame, self)
