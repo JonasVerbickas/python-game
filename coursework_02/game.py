@@ -25,7 +25,7 @@ class Pause():
 		Pause.PAUSE_WINDOW.quit()
 		Pause.PAUSE_WINDOW.destroy()
 		Pause.PAUSE_WINDOW = 0
-		self.game.breakToSave() # this way we quit after the while loop without deleting any needed variables
+		self.game.saveAndMenu() # this way we quit after the while loop without deleting any needed variables
 
 	def __init__(self, event, game):
 		self.game = game
@@ -118,7 +118,8 @@ class Reticle(Object):
 
 	def create(self, starting_object):
 		self.OBJECT_WHERE_IT_STARTS = starting_object
-		self.ID = self.CANVAS.create_line(0, 0, 0, 0, fill='red')
+		xy = (starting_object.getCenter()[0], starting_object.getCenter()[1], starting_object.getCenter()[0]+self.SIZE, starting_object.getCenter()[1])
+		self.ID = self.CANVAS.create_line(xy, fill='red')
 		self.CANVAS.bind("<Motion>", self.aim)
 
 class Projectile(Object):
@@ -138,18 +139,16 @@ class Enemy(Object):
 	WORTH = 10
 	SIZE = 50
 	SPEED = 4
-	def create(self):
-		h = self.CANVAS.winfo_height()
-		w = self.CANVAS.winfo_width()
-		xy = createCoordsFromCenter([w, randint(0,h)], self.SIZE)
+	def create(self, xy):
 		self.ID = self.CANVAS.create_oval(xy, fill='dark green')
 
 class ProjectileManager():
 	CANVAS = 0
 	PROJECTILES = []
-	def __init__(self,canvas):
+	def __init__(self,canvas, windowManager):
 		ProjectileManager.CANVAS = canvas
 		ProjectileManager.PROJECTILES = []
+		ProjectileManager.windowManager = windowManager
 	@staticmethod
 	def createProjectile(starting_xy, goal_xy):
 		p = Projectile(ProjectileManager.CANVAS)
@@ -161,10 +160,8 @@ class ProjectileManager():
 		ProjectileManager.PROJECTILES.remove(e)
 	@staticmethod
 	def moveAllProjectiles():
-		w = ProjectileManager.CANVAS.winfo_width()
-		h = ProjectileManager.CANVAS.winfo_height()
 		for p in list(ProjectileManager.PROJECTILES):
-			if outOfBounds(p, [w, h]):
+			if outOfBounds(p, ProjectileManager.windowManager.getResolution()):
 				ProjectileManager.CANVAS.delete(p.ID)
 				ProjectileManager.PROJECTILES.remove(p)
 			else:
@@ -178,15 +175,19 @@ class EnemyManager():
 	ENEMIES = []
 	SPAWN_INTERVAL = 2#seconds
 	LAST_SPAWN=0
-	def __init__(self, canvas):
+	def __init__(self, canvas, windowManager):
 		EnemyManager.CANVAS = canvas
 		EnemyManager.LAST_SPAWN = time()
 		EnemyManager.ENEMIES = []
+		EnemyManager.windowManager = windowManager
 	@staticmethod
-	def spawnEnemy():
+	def spawnEnemy(coords=[]):
 		if time()-EnemyManager.LAST_SPAWN > EnemyManager.SPAWN_INTERVAL:
+			w = EnemyManager.windowManager.getResolution()[0]
+			h = EnemyManager.windowManager.getResolution()[1]
 			e = Enemy(EnemyManager.CANVAS)
-			e.create()
+			xy = createCoordsFromCenter([w, randint(0,h)], e.SIZE)
+			e.create(xy)
 			EnemyManager.ENEMIES.append(e)
 			EnemyManager.LAST_SPAWN = time()
 
@@ -197,10 +198,8 @@ class EnemyManager():
 
 	@staticmethod
 	def moveEnemies():
-		w = EnemyManager.CANVAS.winfo_width()
-		h = EnemyManager.CANVAS.winfo_height()
 		for e in list(EnemyManager.ENEMIES):
-			if outOfBounds(e, [w+(e.SIZE*2), h]):
+			if outOfBounds(e, [EnemyManager.windowManager.getResolution()[0]+(e.SIZE*2), EnemyManager.windowManager.getResolution()[1]]):
 				EnemyManager.killEnemy(e)
 			elif e.getXY()[0] < e.SIZE:
 				HealthTracker.hp -= 1
@@ -301,7 +300,8 @@ class Game:
 	TIME_BETWEEN_FRAMES = 3#ms
 
 	def __init__(self, frame, windowManager, loadSave=False):
-		self.BREAK_TO_SAVE = False
+		self.SAVE_AND_MENU = False
+		self.SAVE_AND_BOSSKEY = False
 		self.windowManager = windowManager
 		self.frame = frame
 		self.initialAssetLoad()
@@ -316,6 +316,7 @@ class Game:
 		window.bind(options['up'], self.player.up)
 		window.bind(options['down'], self.player.down)
 		window.bind("<Escape>", self.pause)
+		window.bind("p", self.saveAndBosskey)
 		self.player.CANVAS.bind("<ButtonRelease-1>", self.player.AMMO_TRACKER.shoot)
 
 	def unbindKeys(self):
@@ -327,24 +328,19 @@ class Game:
 		window.unbind("<Escape>")
 
 	def createGlobalStatTrackers(self):
-		ProjectileManager(self.sky)
+		ProjectileManager(self.sky, self.windowManager)
 		HealthTracker()
 		ScoreTracker()
-		EnemyManager(self.sky)
+		EnemyManager(self.sky, self.windowManager)
 
 	def pause(self, event):
 		Pause(event, self)
 
-	def breakToSave(self):
-		self.BREAK_TO_SAVE = True
+	def saveAndMenu(self):
+		self.SAVE_AND_MENU = True
 
-
-	def gameBossKey(self, event):
-		pass
-		# save game
-		# create new frame
-		# load that frame
-		# change .bind('p') to load the game
+	def saveAndBosskey(self, event):
+		self.SAVE_AND_BOSSKEY = True
 
 
 	def initialAssetLoad(self):
@@ -375,9 +371,16 @@ class Game:
 		HealthTracker.hp = data['hp']
 		ScoreTracker.score = data['score']
 		self.player.AMMO_TRACKER.current_ammo = data['ammo']
+		for e_coords in data['ENEMIES']:
+			print(EnemyManager.ENEMIES)
+			e = Enemy(self.sky)
+			xy = createCoordsFromCenter(e_coords, e.SIZE)
+			e.create(xy)
+			EnemyManager.ENEMIES.append(e)
+			print(EnemyManager.ENEMIES)
 
 	def loop(self):
-		while HealthTracker.hp > 0 and not self.BREAK_TO_SAVE:
+		while HealthTracker.hp > 0 and not (self.SAVE_AND_MENU or self.SAVE_AND_BOSSKEY):
 			self.player.AMMO_TRACKER.tryToReload()
 			ProjectileManager.manage()
 			EnemyManager.manage()
@@ -386,9 +389,12 @@ class Game:
 			self.frame.after(self.TIME_BETWEEN_FRAMES)
 
 		self.unbindKeys()
-		if self.BREAK_TO_SAVE:
+		if self.SAVE_AND_MENU:
 			self.saveGameToFile()
-			self.windowManager.saveAndQuit()
+			self.windowManager.menu()
+		elif self.SAVE_AND_BOSSKEY:
+			self.saveGameToFile()
+			self.windowManager.openBossKeyInGame()
 		else:
 			leaderboard = open('leaderboard.txt', 'a')
 			leaderboard.write("Jonas:" + str(ScoreTracker.score) + '\n')

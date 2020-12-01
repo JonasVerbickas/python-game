@@ -9,8 +9,7 @@ class WindowManager():
 	def __init__(self, window, resolution):
 		self.window= window
 		self.resolution = resolution
-		self.window.bind('p', self.pressedBossKey)
-		self.createBossKeyFrame()
+		self.createHiddenBossKey()
 		self.menu()
 
 
@@ -45,10 +44,8 @@ class WindowManager():
 
 	def menu(self):
 		new_frame = self.createCleanFrame()
+		self.window.bind('p', self.pressedBossKey)
 		Menu(new_frame, self)
-
-	def saveAndQuit(self):
-		self.menu()
 
 	def leaderboard(self):
 		new_frame = self.createCleanFrame()
@@ -58,12 +55,17 @@ class WindowManager():
 		new_frame = self.createCleanFrame()
 		options = Options(new_frame, self)
 
-	def createBossKeyFrame(self):
+	def openBossKeyInGame(self):
+		new_frame = self.createCleanFrame()
+		boss_key = BossKey(new_frame, self, True)
+
+	def createHiddenBossKey(self):
 		hidden_frame = BossKey(Frame(self.window), self)
 		hidden_frame = hidden_frame.frame
 		hidden_frame.pack_forget()
 
 	def pressedBossKey(self, event):
+		print("NORMAL BossKey")
 		for frame in self.window.winfo_children():
 			if frame.winfo_ismapped():
 				frame.pack_forget()

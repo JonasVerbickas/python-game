@@ -1,10 +1,15 @@
 from tkinter import Canvas, Button
 
 class BossKey():
-	def __init__(self, frame, windowManager):
+	def loadGameFromBossKey(self, event):
+		self.windowManager.loadSavedGame()
+
+	def __init__(self, frame, windowManager, loadGame=False):
 		self.frame= frame
 		self.windowManager = windowManager
 		self.create()
+		if loadGame:
+			self.frame.master.bind("p", self.loadGameFromBossKey)
 
 
 	def create(self):
