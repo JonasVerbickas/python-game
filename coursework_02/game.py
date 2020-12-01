@@ -120,7 +120,7 @@ class Reticle(Object):
 		self.OBJECT_WHERE_IT_STARTS = starting_object
 		xy = (starting_object.getCenter()[0], starting_object.getCenter()[1], starting_object.getCenter()[0]+self.SIZE, starting_object.getCenter()[1])
 		self.ID = self.CANVAS.create_line(xy, fill='red')
-		self.CANVAS.bind("<Motion>", self.aim)
+		self.CANVAS.master.master.bind("<Motion>", self.aim)
 
 class Projectile(Object):
 	SPEED = 15
@@ -316,7 +316,7 @@ class Game:
 		window.bind(options['up'], self.player.up)
 		window.bind(options['down'], self.player.down)
 		window.bind("<Escape>", self.pause)
-		window.bind("p", self.saveAndBosskey)
+		window.bind(options['bosskey'], self.saveAndBosskey)
 		self.player.CANVAS.bind("<ButtonRelease-1>", self.player.AMMO_TRACKER.shoot)
 
 	def unbindKeys(self):
@@ -326,6 +326,7 @@ class Game:
 		window.unbind(options['up'])
 		window.unbind(options['down'])
 		window.unbind("<Escape>")
+		window.unbind("<Motion>")
 
 	def createGlobalStatTrackers(self):
 		ProjectileManager(self.sky, self.windowManager)
@@ -372,12 +373,10 @@ class Game:
 		ScoreTracker.score = data['score']
 		self.player.AMMO_TRACKER.current_ammo = data['ammo']
 		for e_coords in data['ENEMIES']:
-			print(EnemyManager.ENEMIES)
 			e = Enemy(self.sky)
 			xy = createCoordsFromCenter(e_coords, e.SIZE)
 			e.create(xy)
 			EnemyManager.ENEMIES.append(e)
-			print(EnemyManager.ENEMIES)
 
 	def loop(self):
 		while HealthTracker.hp > 0 and not (self.SAVE_AND_MENU or self.SAVE_AND_BOSSKEY):

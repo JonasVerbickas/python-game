@@ -1,6 +1,8 @@
-from tkinter import Canvas, Button
+from tkinter import Label
+from json import load
 
 class BossKey():
+
 	def loadGameFromBossKey(self, event):
 		self.windowManager.loadSavedGame()
 
@@ -9,11 +11,11 @@ class BossKey():
 		self.windowManager = windowManager
 		self.create()
 		if loadGame:
-			self.frame.master.bind("p", self.loadGameFromBossKey)
+			with open('options.json', 'r') as f:
+				self.frame.master.bind(load(f)['bosskey'], self.loadGameFromBossKey)
 
 
 	def create(self):
-		canvas = Canvas(self.frame, width=self.windowManager.getResolution()[0], height=self.windowManager.getResolution()[1], bg='black')
-		canvas.pack()
-		canvas.create_text(500, 500, text='BOSS', font=('Arial', 32), fill='white')
+		self.label = Label(self.frame, image=self.windowManager.boss_image)
+		self.label.pack()
 

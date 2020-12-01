@@ -4,14 +4,15 @@ from menu import Menu
 from leaderboard import LeaderBoard
 from options import Options
 from bossKey import BossKey
+from json import load
 
 class WindowManager():
 	def __init__(self, window, resolution):
 		self.window= window
 		self.resolution = resolution
+		self.boss_image = PhotoImage(file='bosskey.gif')
 		self.createHiddenBossKey()
 		self.menu()
-
 
 	def getResolution(self):
 		return self.resolution
@@ -44,8 +45,9 @@ class WindowManager():
 
 	def menu(self):
 		new_frame = self.createCleanFrame()
-		self.window.bind('p', self.pressedBossKey)
-		Menu(new_frame, self)
+		with open('options.json', 'r') as f:
+			self.window.bind(load(f)['bosskey'], self.pressedBossKey)
+			Menu(new_frame, self)
 
 	def leaderboard(self):
 		new_frame = self.createCleanFrame()
@@ -65,7 +67,6 @@ class WindowManager():
 		hidden_frame.pack_forget()
 
 	def pressedBossKey(self, event):
-		print("NORMAL BossKey")
 		for frame in self.window.winfo_children():
 			if frame.winfo_ismapped():
 				frame.pack_forget()
