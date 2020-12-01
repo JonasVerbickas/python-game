@@ -11,6 +11,7 @@ class WindowManager():
 		self.window= window
 		self.resolution = resolution
 		self.boss_image = PhotoImage(file='bosskey.gif')
+		self.menu_image = PhotoImage(file='menubackground.gif')
 		self.createHiddenBossKey()
 		self.menu()
 
