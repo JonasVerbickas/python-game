@@ -4,7 +4,6 @@ from WindowManager import WindowManager
 
 RESOLUTION = (1280, 720)
 
-
 if __name__ == "__main__":
 	window = Tk()
 	window.title("PEW PEW")

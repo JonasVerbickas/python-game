@@ -309,11 +309,43 @@ class Game:
 			self.loadFromFile()
 		self.loop()
 
+	def bindKeys(self):
+		with open("options.json", 'r') as f:
+			options = load(f)
+		window = self.frame.master
+		window.bind(options['up'], self.player.up)
+		window.bind(options['down'], self.player.down)
+		window.bind("<Escape>", self.pause)
+		self.player.CANVAS.bind("<ButtonRelease-1>", self.player.AMMO_TRACKER.shoot)
+
+	def unbindKeys(self):
+		with open('options.json', 'r') as f:
+			options = load(f)
+		window = self.frame.master
+		window.unbind(options['up'])
+		window.unbind(options['down'])
+		window.unbind("<Escape>")
+
+	def createGlobalStatTrackers(self):
+		ProjectileManager(self.sky)
+		HealthTracker()
+		ScoreTracker()
+		EnemyManager(self.sky)
+
 	def pause(self, event):
 		Pause(event, self)
 
 	def breakToSave(self):
 		self.BREAK_TO_SAVE = True
+
+
+	def gameBossKey(self, event):
+		pass
+		# save game
+		# create new frame
+		# load that frame
+		# change .bind('p') to load the game
+
 
 	def initialAssetLoad(self):
 		self.sky = Canvas(self.frame, width=self.windowManager.getResolution()[0], height=self.windowManager.getResolution()[1], background='sky blue')
@@ -323,22 +355,10 @@ class Game:
 		self.player = Player(self.sky)
 		self.player.create(starting_point)
 
-		# order of operations is very important
-		# some of them depent of the definitions of other
-		with open("options.json", 'r') as f:
-			options = load(f)
-		print(options)
-		window = self.frame.master
-		window.bind(options['up'], self.player.up)
-		window.bind(options['down'], self.player.down)
-		window.bind("<Escape>", self.pause)
-
-		ProjectileManager(self.sky)
-		self.player.CANVAS.bind("<ButtonRelease-1>", self.player.AMMO_TRACKER.shoot)
-		HealthTracker()
-		ScoreTracker()
-		EnemyManager(self.sky)
+		self.createGlobalStatTrackers()
 		self.ui = UI(self.sky, self.player)
+
+		self.bindKeys()
 
 
 	def saveGameToFile(self):
@@ -365,8 +385,8 @@ class Game:
 			self.frame.update()
 			self.frame.after(self.TIME_BETWEEN_FRAMES)
 
+		self.unbindKeys()
 		if self.BREAK_TO_SAVE:
-			self.frame.master.unbind("<Escape>")
 			self.saveGameToFile()
 			self.windowManager.saveAndQuit()
 		else:

@@ -7,7 +7,6 @@ class Options():
 		self.windowManager = windowManager
 		self.create()
 
-
 	def getOptions(self):
 		f = open('options.json', 'r')
 		data = load(f)

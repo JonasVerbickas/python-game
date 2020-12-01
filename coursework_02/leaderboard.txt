@@ -59,3 +59,7 @@ Jonas:30
 Jonas:90
 Jonas:100
 Jonas:0
+Jonas:40
+Jonas:130
+Jonas:130
+Jonas:130
