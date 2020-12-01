@@ -2,7 +2,7 @@ from tkinter import Tk, Frame, Canvas, messagebox, Button, W, E
 from math import sqrt
 from random import randint
 from time import time
-from json import load
+from json import load, dumps
 
 MAX_AMMO = 5
 MAX_HEALTH = 2
@@ -222,37 +222,34 @@ class EnemyManager():
 
 
 class AmmoTracker():
-	CURRENT_AMMO = 0
 	SEC_TO_RELOAD = 0.5
-	RELOAD_START = 0
 
 	OBJ = 0 # id of the object whose ammo we are tracking
 
+
 	def __init__(self, obj):
 		self.OBJ = obj
-		self.CURRENT_AMMO = MAX_AMMO
+		self.reload_started_at = time()
+		self.current_ammo = MAX_AMMO
 
 
 	def tryToReload(self):
-		if self.CURRENT_AMMO < MAX_AMMO:
-			if time() - self.RELOAD_START > self.SEC_TO_RELOAD:
-				self.CURRENT_AMMO += 1
-				self.RELOAD_START = time()
+		if self.current_ammo < MAX_AMMO:
+			if time() - self.reload_started_at > self.SEC_TO_RELOAD:
+				self.current_ammo += 1
+				self.reload_started_at = time()
 
 
 	def shoot(self, event):
-		if self.CURRENT_AMMO > 0:
-			self.RELOAD_START = time()
-			self.CURRENT_AMMO -= 1
+		if self.current_ammo > 0:
+			self.reload_started_at = time()
+			self.current_ammo -= 1
 			ProjectileManager.createProjectile(self.OBJ.getCenter(), goal_xy=[self.OBJ.RETICLE.getXY()[2], self.OBJ.RETICLE.getXY()[3]])
 
 
 class Player(Object):
 	SIZE = 45
-	RETICLE = 0
 	SPEED = 8
-
-	AMMO_TRACKER = 0
 
 	def up(self, event):
 		if self.getXY()[1] > self.SIZE:
@@ -285,26 +282,17 @@ class ScoreTracker:
 
 
 class UI:
-	# from global
-	CANVAS = 0
-	PLAYER = 0
-
-	# only local
-	score = 0
-	ammo = 0
-	health = 0
-
 	def __init__(self, canvas, player):
-		self.CANVAS = canvas
-		self.PLAYER = player
-		self.score = self.CANVAS.create_text(640, 20, text="Score: 0", font=("Arial", 20, 'bold'))
-		self.ammo = self.CANVAS.create_text(1260, 20, text="Ammo: 0", font=("Arial", 20, 'bold'), anchor=E)
-		self.health = self.CANVAS.create_text(10, 20, text="Health: 0", font=("Arial", 20, 'bold'), anchor=W)
+		self.canvas = canvas
+		self.player = player
+		self.score = self.canvas.create_text(640, 20, text="Score: 0", font=("Arial", 20, 'bold'))
+		self.ammo = self.canvas.create_text(1260, 20, text="Ammo: 0", font=("Arial", 20, 'bold'), anchor=E)
+		self.health = self.canvas.create_text(10, 20, text="Health: 0", font=("Arial", 20, 'bold'), anchor=W)
 
 	def update(self):	
-		self.CANVAS.itemconfig(self.score, text="Score: " + str(ScoreTracker.score))
-		self.CANVAS.itemconfig(self.ammo, text="Ammo: " + str(self.PLAYER.AMMO_TRACKER.CURRENT_AMMO))
-		self.CANVAS.itemconfig(self.health, text="Health: " + str(HealthTracker.hp))
+		self.canvas.itemconfig(self.score, text="Score: " + str(ScoreTracker.score))
+		self.canvas.itemconfig(self.ammo, text="Ammo: " + str(self.player.AMMO_TRACKER.current_ammo))
+		self.canvas.itemconfig(self.health, text="Health: " + str(HealthTracker.hp))
 
 
 
@@ -316,15 +304,16 @@ class Game:
 		self.BREAK_TO_SAVE = False
 		self.windowManager = windowManager
 		self.frame = frame
-		self.create()
+		self.initialAssetLoad()
+		self.loop()
+
 	def pause(self, event):
 		Pause(event, self)
 
 	def breakToSave(self):
 		self.BREAK_TO_SAVE = True
-		self.windowManager.window.unbind("<Escape>")
 
-	def loadAssets(self):
+	def initialAssetLoad(self):
 		self.sky = Canvas(self.frame, width=self.windowManager.getResolution()[0], height=self.windowManager.getResolution()[1], background='sky blue')
 		self.sky.pack()
 
@@ -350,6 +339,12 @@ class Game:
 		self.ui = UI(self.sky, self.player)
 
 
+	def saveGameToFile(self):
+		data = {"player": self.player.getCenter(), "ENEMIES":[e.getCenter() for e in EnemyManager.ENEMIES], "hp":HealthTracker.hp, "score":ScoreTracker.score, "ammo": self.player.AMMO_TRACKER.current_ammo}
+		with open("save.json", 'w') as f:
+			f.write(dumps(data))
+
+
 	def loop(self):
 		while HealthTracker.hp > 0 and not self.BREAK_TO_SAVE:
 			self.player.AMMO_TRACKER.tryToReload()
@@ -358,19 +353,17 @@ class Game:
 			self.ui.update()
 			self.frame.update()
 			self.frame.after(self.TIME_BETWEEN_FRAMES)
-			print(self.BREAK_TO_SAVE)
 
 		if self.BREAK_TO_SAVE:
-			self.windowManager.saveGameAndMenu()
+			self.frame.master.unbind("<Escape>")
+			self.saveGameToFile()
+			self.windowManager.saveAndQuit()
 		else:
 			leaderboard = open('leaderboard.txt', 'a')
 			leaderboard.write("Jonas:" + str(ScoreTracker.score) + '\n')
 			leaderboard.close()
 			self.windowManager.gameOver()
 
-	def create(self):
-		self.loadAssets()
-		self.loop()
 
 	def save(self):
 		pass

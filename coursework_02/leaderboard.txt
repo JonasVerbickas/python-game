@@ -50,3 +50,9 @@ Jonas:110
 Jonas:0
 Jonas:10
 Jonas:10
+Jonas:10
+Jonas:0
+Jonas:0
+Jonas:0
+Jonas:0
+Jonas:30

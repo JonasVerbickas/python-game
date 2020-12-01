@@ -38,9 +38,8 @@ class WindowManager():
 		new_frame = self.createCleanFrame()
 		Menu(new_frame, self)
 
-	def saveGameAndMenu(self):
+	def saveAndQuit(self):
 		self.menu()
-
 
 	def leaderboard(self):
 		new_frame = self.createCleanFrame()
