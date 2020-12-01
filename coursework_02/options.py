@@ -1,5 +1,5 @@
 from tkinter import Canvas, Button
-import json
+from json import dumps, load
 
 class Options():
 	def __init__(self, frame, windowManager):
@@ -10,25 +10,34 @@ class Options():
 
 	def getOptions(self):
 		f = open('options.json', 'r')
-		data = json.load(f)
+		data = load(f)
 		f.close()
 		return data
 
 	def writeOptions(self):
 		f = open('options.json', 'w')
-		print(json.dumps(self.options))
-		f.write(json.dumps(self.options))
+		f.write(dumps(self.options))
 		f.close()		
 
 	def changeUp(self, event):
-		print(event.char)
-		self.options['up'] = event.char
-		self.frame.master.unbind("<Key>")
-		self.writeOptions()
-		self.windowManager.options()
+		if event.char.isalnum():
+			self.options['up'] = event.char
+			self.frame.master.unbind("<Key>")
+			self.writeOptions()
+			self.windowManager.options()
 
 	def waitForNewUp(self):
 		self.frame.master.bind("<Key>", self.changeUp)
+
+	def changeDown(self, event):
+		if event.char.isalnum():
+			self.options['down'] = event.char
+			self.frame.master.unbind("<Key>")
+			self.writeOptions()
+			self.windowManager.options()
+
+	def waitForNewDown(self):
+		self.frame.master.bind("<Key>", self.changeDown)
 
 	def create(self):
 		canvas = Canvas(self.frame, width=self.windowManager.getResolution()[0], height=self.windowManager.getResolution()[1], bg='black')
@@ -38,4 +47,10 @@ class Options():
 		self.options = self.getOptions()
 		
 		up_button = Button(canvas, text=("Move Up: '%s'" % (self.options['up'])), command=self.waitForNewUp)
-		up_button.place(x=self.windowManager.getResolution()[0]/2-50, y=200)
+		up_button.place(relx=0.45, rely=0.3)
+
+		down_button = Button(canvas, text=("Move Down: '%s'" % (self.options['down'])), command=self.waitForNewDown)
+		down_button.place(relx=0.45, rely=0.4)
+
+		back_button = Button(canvas, text="BACK", command=self.windowManager.menu)
+		back_button.place(relx=0.05, rely=0.05)

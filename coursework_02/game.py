@@ -1,7 +1,8 @@
-from tkinter import Tk, Frame, Canvas, messagebox, Button
+from tkinter import Tk, Frame, Canvas, messagebox, Button, W, E
 from math import sqrt
 from random import randint
 from time import time
+from json import load
 
 MAX_AMMO = 5
 MAX_HEALTH = 2
@@ -19,20 +20,37 @@ class Pause():
 		Pause.PAUSE_WINDOW.quit()
 		Pause.PAUSE_WINDOW.destroy()
 		Pause.PAUSE_WINDOW = 0
-	def __init__(self, event):
+
+	def quit(self):
+		Pause.PAUSE_WINDOW.quit()
+		Pause.PAUSE_WINDOW.destroy()
+		Pause.PAUSE_WINDOW = 0
+		self.game.breakToSave() # this way we quit after the while loop without deleting any needed variables
+
+	def __init__(self, event, game):
+		self.game = game
 		if Pause.PAUSE_WINDOW == 0: # not paused
 			Pause.PAUSE_WINDOW = Tk()
-			Pause.PAUSE_WINDOW.geometry("200x100+500+300")
+			Pause.PAUSE_WINDOW.geometry("200x200+500+300")
 			Pause.PAUSE_WINDOW.overrideredirect(True)
 			canvas = Canvas(Pause.PAUSE_WINDOW)
 			canvas.pack()
 			canvas.create_text(100, 32, text="PAUSED", font=("Arial", 32))
 			resume_button = Button(canvas, text='Resume', command=self.resume)
-			resume_button.place(relx=0.3, rely=0.7)
-			while Pause.PAUSE_WINDOW != 0:
-				Pause.PAUSE_WINDOW.lift()
-				Pause.PAUSE_WINDOW.update()
-			Pause.PAUSE_WINDOW.mainloop()
+			resume_button.place(relx=0.3, rely=0.5)
+			quit_button = Button(canvas, text='Save and Quit', command=self.quit)
+			quit_button.place(relx=0.2, rely=0.7)
+			# usually the try block errors because the window gets destroyed
+			# and while loop is not finished yet so it tries to call it a destroyed window
+			try:
+				while Pause.PAUSE_WINDOW != 0:
+					Pause.PAUSE_WINDOW.lift()
+					Pause.PAUSE_WINDOW.update()
+				Pause.PAUSE_WINDOW.mainloop()
+			except Exception as e:
+				print("PROBABLY FINE?: ", e)
+
+
 
 def outOfBounds(obj, bounds):
 		# horizontal
@@ -82,7 +100,7 @@ class Object:
 
 class Reticle(Object):
 	SIZE = 50
-	OBJECT_WHERE_IT_STARTS = 0 # usually the player
+	OBJECT_WHERE_IT_STARTS = 0
 	LAST_AIM_SPOT = [SIZE, 0]
 
 	def aim(self, event=None):
@@ -252,14 +270,7 @@ class Player(Object):
 		self.ID = self.CANVAS.create_oval(xy, fill="tomato")
 		self.RETICLE = Reticle(self.CANVAS)
 		self.RETICLE.create(self)
-		window = self.CANVAS.master.master
-		print(window)
 		self.AMMO_TRACKER = AmmoTracker(self)
-		self.CANVAS.bind("<ButtonRelease-1>", self.AMMO_TRACKER.shoot)
-		window.bind("w", self.up)
-		window.bind("s", self.down)
-		window.bind("<Escape>", Pause)
-
 
 class HealthTracker:
 	hp = 1
@@ -286,9 +297,9 @@ class UI:
 	def __init__(self, canvas, player):
 		self.CANVAS = canvas
 		self.PLAYER = player
-		self.score = self.CANVAS.create_text(500, 20, text="Score: 0", font=("Arial", 20, 'bold'))
-		self.ammo = self.CANVAS.create_text(500, 50, text="Ammo: 0", font=("Arial", 20, 'bold'))
-		self.health = self.CANVAS.create_text(500, 80, text="Health: 0", font=("Arial", 20, 'bold'))
+		self.score = self.CANVAS.create_text(640, 20, text="Score: 0", font=("Arial", 20, 'bold'))
+		self.ammo = self.CANVAS.create_text(1260, 20, text="Ammo: 0", font=("Arial", 20, 'bold'), anchor=E)
+		self.health = self.CANVAS.create_text(10, 20, text="Health: 0", font=("Arial", 20, 'bold'), anchor=W)
 
 	def update(self):	
 		self.CANVAS.itemconfig(self.score, text="Score: " + str(ScoreTracker.score))
@@ -301,46 +312,65 @@ class Game:
 	# game consts
 	TIME_BETWEEN_FRAMES = 3#ms
 
-	# assets
-	sky = 0
-	player = 0
-	reticle = 0
-	ui = 0
-
-	def __init__(self, frame, resolution):
-		self.RESOLUTION = resolution
+	def __init__(self, frame, windowManager):
+		self.BREAK_TO_SAVE = False
+		self.windowManager = windowManager
 		self.frame = frame
 		self.create()
+	def pause(self, event):
+		Pause(event, self)
+
+	def breakToSave(self):
+		self.BREAK_TO_SAVE = True
+		self.windowManager.window.unbind("<Escape>")
 
 	def loadAssets(self):
-		self.sky = Canvas(self.frame, width=self.RESOLUTION[0], height=self.RESOLUTION[1], background='sky blue')
+		self.sky = Canvas(self.frame, width=self.windowManager.getResolution()[0], height=self.windowManager.getResolution()[1], background='sky blue')
 		self.sky.pack()
 
-		starting_point = (50, self.RESOLUTION[1]/2)
+		starting_point = (50, self.windowManager.getResolution()[1]/2)
 		self.player = Player(self.sky)
 		self.player.create(starting_point)
 
+		# order of operations is very important
+		# some of them depent of the definitions of other
+		with open("options.json", 'r') as f:
+			options = load(f)
+		print(options)
+		window = self.frame.master
+		window.bind(options['up'], self.player.up)
+		window.bind(options['down'], self.player.down)
+		window.bind("<Escape>", self.pause)
+
+		ProjectileManager(self.sky)
+		self.player.CANVAS.bind("<ButtonRelease-1>", self.player.AMMO_TRACKER.shoot)
 		HealthTracker()
 		ScoreTracker()
-		ProjectileManager(self.sky)
 		EnemyManager(self.sky)
 		self.ui = UI(self.sky, self.player)
 
 
 	def loop(self):
-		while HealthTracker.hp > 0:
+		while HealthTracker.hp > 0 and not self.BREAK_TO_SAVE:
 			self.player.AMMO_TRACKER.tryToReload()
 			ProjectileManager.manage()
 			EnemyManager.manage()
 			self.ui.update()
 			self.frame.update()
 			self.frame.after(self.TIME_BETWEEN_FRAMES)
+			print(self.BREAK_TO_SAVE)
 
-		leaderboard = open('leaderboard.txt', 'a')
-		leaderboard.write("Jonas:" + str(ScoreTracker.score) + '\n')
-		leaderboard.close()
+		if self.BREAK_TO_SAVE:
+			self.windowManager.saveGameAndMenu()
+		else:
+			leaderboard = open('leaderboard.txt', 'a')
+			leaderboard.write("Jonas:" + str(ScoreTracker.score) + '\n')
+			leaderboard.close()
+			self.windowManager.gameOver()
 
 	def create(self):
 		self.loadAssets()
 		self.loop()
 
+	def save(self):
+		pass

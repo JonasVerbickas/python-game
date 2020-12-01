@@ -32,7 +32,7 @@ class LeaderBoard():
 
 
 	def create(self):
-		canvas = Canvas(self.frame, width=self.windowManager.getResolution()[0], height=self.windowManager.getResolution()[1], bg='dark red')
+		canvas = Canvas(self.frame, width=self.windowManager.getResolution()[0], height=self.windowManager.getResolution()[1], bg='black')
 		canvas.pack()
 
 		back_button = Button(canvas, text="BACK", command=self.windowManager.menu)

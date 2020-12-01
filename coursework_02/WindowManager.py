@@ -31,21 +31,25 @@ class WindowManager():
 			self.menu()
 
 	def game(self):
-		new_frame = self.createCleanFrame()
-		game = Game(new_frame, self.resolution)
-		self.gameOver()
-
+		self.game_frame = self.createCleanFrame()
+		game = Game(self.game_frame, self)
 
 	def menu(self):
 		new_frame = self.createCleanFrame()
 		Menu(new_frame, self)
 
+	def saveGameAndMenu(self):
+		self.menu()
+
 
 	def leaderboard(self):
 		new_frame = self.createCleanFrame()
-		leaderboard = LeaderBoard(self.window, self)
-		leaderboard.create()
+		leaderboard = LeaderBoard(new_frame, self)
 
 	def options(self):
 		new_frame = self.createCleanFrame()
 		options = Options(new_frame, self)
+
+
+	def boss_key(self):
+		pass # needs saving to be implemented
