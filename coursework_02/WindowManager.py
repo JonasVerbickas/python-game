@@ -14,8 +14,9 @@ class WindowManager():
 		self.boss_image = PhotoImage(file='bosskey.gif')
 		self.menu_image = PhotoImage(file='menubackground.gif')
 		self.createHiddenBossKey()
-		with open('options.json', 'r') as f:
-			self.window.bind(load(f)['bosskey'], self.pressedBossKey)
+		option_file = open('options.json', 'r')
+		self.window.bind(load(option_file)['bosskey'], self.pressedBossKey)
+		option_file.close()
 		self.menu()
 
 	def getResolution(self):

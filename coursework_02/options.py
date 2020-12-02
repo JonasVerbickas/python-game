@@ -8,15 +8,15 @@ class Options():
 		self.create()
 
 	def getOptions(self):
-		f = open('options.json', 'r')
-		data = load(f)
-		f.close()
+		option_file = open('options.json', 'r')
+		data = load(option_file)
+		option_file.close()
 		return data
 
 	def writeOptions(self):
-		f = open('options.json', 'w')
-		f.write(dumps(self.options))
-		f.close()		
+		option_file = open('options.json', 'w')
+		option_file.write(dumps(self.options))
+		option_file.close()		
 
 	def changeKeyPopUp(self):
 		width = 300

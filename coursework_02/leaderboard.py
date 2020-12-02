@@ -1,20 +1,23 @@
 from tkinter import Frame, Canvas, Button, Label #widgets
 from tkinter import W, E, NW, CENTER # anchors
+from os.path import isfile
 
 class LeaderBoard():
 	def getSortedListOfLeaders(self):
 		list_of_leaders = []
-		f = open("leaderboard.txt", 'r')
-		for key_val in f.read().strip().split('\n'):
-			key_val_split = key_val.split(':')
-			for combo in list(list_of_leaders):
-				if int(key_val_split[1]) > int(combo[1]):
-					insert_index = list_of_leaders.index(combo)
-					list_of_leaders.insert(insert_index, key_val_split)
-					break
-			else:
-				list_of_leaders.append(key_val_split)
-		f.close()
+		if isfile("leaderboard.txt"):
+			leaderboard_file = open("leaderboard.txt", 'r')
+			leaderboard_list = leaderboard_file.read().strip().split('\n')
+			for key_val in leaderboard_list:
+				key_val_split = key_val.split(':')
+				for combo in list(list_of_leaders):
+					if int(key_val_split[1]) > int(combo[1]):
+						insert_index = list_of_leaders.index(combo)
+						list_of_leaders.insert(insert_index, key_val_split)
+						break
+				else:
+					list_of_leaders.append(key_val_split)
+			leaderboard_file.close()
 		return list_of_leaders[:10] # only the TOP 9
 
 	def leaderList2String(self, leader_list):
@@ -39,6 +42,7 @@ class LeaderBoard():
 
 		back_button = Button(canvas, text="BACK", command=self.windowManager.menu, bg="sky blue", padx=30, pady=20)
 		back_button.place(relx=0.2, rely=0.15)
+
 
 		list_of_leaders = self.getSortedListOfLeaders()
 		grid_of_leaders = Canvas(canvas, width=500, height=500)

@@ -311,8 +311,8 @@ class Game:
 		self.loop()
 
 	def bindKeys(self):
-		with open("options.json", 'r') as f:
-			self.options = load(f)
+		with open("options.json", 'r') as option_file:
+			self.options = load(option_file)
 		window = self.frame.master
 		window.bind("<Escape>", self.pause)
 		window.bind("<ButtonRelease-1>", self.player.AMMO_TRACKER.shoot)
@@ -321,8 +321,8 @@ class Game:
 		window.unbind(self.options['bosskey'])
 
 	def unbindKeys(self):
-		with open('options.json', 'r') as f:
-			options = load(f)
+		with open('options.json', 'r') as option_file:
+			options = load(option_file)
 		window = self.frame.master
 		window.unbind("<Escape>")
 		window.unbind("<ButtonRelease-1>")
@@ -392,13 +392,13 @@ class Game:
 
 	def saveGameToFile(self):
 		data = {"player": self.player.getCenter(), "ENEMIES":[e.getCenter() for e in EnemyManager.ENEMIES], "hp":HealthTracker.hp, "score":ScoreTracker.score, "ammo": self.player.AMMO_TRACKER.current_ammo}
-		with open("save.json", 'w') as f:
-			f.write(dumps(data))
+		with open("save.json", 'w') as save_file:
+			save_file.write(dumps(data))
 
 
 	def loadFromFile(self):
-		with open("save.json", 'r') as f:
-			data = load(f)
+		with open("save.json", 'r') as save_file:
+			data = load(save_file)
 		xy = createCoordsFromCenter(data['player'], self.player.SIZE)
 		self.sky.coords(self.player.ID, xy[0],xy[1],xy[2],xy[3])
 		HealthTracker.hp = data['hp']
@@ -437,9 +437,9 @@ class Game:
 		else:
 			if isfile("save.json"):
 				remove("save.json")
-			leaderboard = open('leaderboard.txt', 'a')
-			leaderboard.write(self.windowManager.player_name + ":" + str(ScoreTracker.score) + '\n')
-			leaderboard.close()
+			leaderboard_file = open('leaderboard.txt', 'a')
+			leaderboard_file.write(self.windowManager.player_name + ":" + str(ScoreTracker.score) + '\n')
+			leaderboard_file.close()
 			self.windowManager.gameOver()
 
 	def save(self):
