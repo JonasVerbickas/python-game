@@ -25,7 +25,7 @@ class Menu():
 
 		self.name_field = Entry(self.frame)
 		self.name_field.place(relx=0.4, rely=0.1)
-		self.name_field.insert(0, 'ANON')
+		self.name_field.insert(0, 'ENTER NAME')
 
 		resume_button = Button(canvas, text="RESUME", padx=60, pady=30, bg='sky blue', fg='black', command=self.loadGameAndSaveName)
 		resume_button.place(relx=0.4, rely=0.2)
@@ -33,11 +33,11 @@ class Menu():
 			resume_button['state'] = DISABLED
 
 		start_new_button = Button(canvas, text="START", padx=60, pady=30, bg='sky blue', fg='black', command=self.startGameAndSaveName)
-		start_new_button.place(relx=0.4, rely=0.3)
+		start_new_button.place(relx=0.405, rely=0.35)
 
 		leaderboard_button = Button(canvas, text="LEADERBOARD", padx=60, pady=30, bg='sky blue', fg='black', command=self.windowManager.leaderboard)
-		leaderboard_button.place(relx=0.4, rely=0.4)
+		leaderboard_button.place(relx=0.385, rely=0.5)
 
 		options_button = Button(canvas, text="OPTIONS", padx=60, pady=30, bg='sky blue', fg='black', command=self.windowManager.options)
-		options_button.place(relx=0.4, rely=0.5)
+		options_button.place(relx=0.4, rely=0.65)
 

@@ -38,7 +38,7 @@ class LeaderBoard():
 		canvas.create_image(0, 0, image=self.windowManager.menu_image, anchor=NW)
 
 		back_button = Button(canvas, text="BACK", command=self.windowManager.menu, bg="sky blue")
-		back_button.place(relx=0.15, rely=0.05)
+		back_button.place(relx=0.2, rely=0.1)
 
 		list_of_leaders = self.getSortedListOfLeaders()
 		string_of_leaders = self.leaderList2String(list_of_leaders)

@@ -58,13 +58,13 @@ class Options():
 		self.options = self.getOptions()
 		
 		up_button = Button(canvas, text=("Move Up: '%s'" % (self.options['up'])), command=self.waitForNewUp, bg="sky blue")
-		up_button.place(relx=0.45, rely=0.3)
+		up_button.place(relx=0.456, rely=0.3)
 
 		down_button = Button(canvas, text=("Move Down: '%s'" % (self.options['down'])), command=self.waitForNewDown, bg="sky blue")
 		down_button.place(relx=0.45, rely=0.4)
 
 		down_button = Button(canvas, text=("Boss Key: '%s'" % (self.options['bosskey'])), command=self.waitForNewBossKey, bg="sky blue")
-		down_button.place(relx=0.45, rely=0.5)
+		down_button.place(relx=0.458, rely=0.5)
 
 		back_button = Button(canvas, text="BACK", command=self.windowManager.menu, bg="sky blue")
-		back_button.place(relx=0.15, rely=0.05)
+		back_button.place(relx=0.2, rely=0.1)
