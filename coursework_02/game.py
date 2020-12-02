@@ -8,9 +8,10 @@ from os.path import isfile
 
 MAX_AMMO = 5
 MAX_HEALTH = 2
-TIME_BETWEEN_FRAMES = 20#ms
+TIME_BETWEEN_FRAMES = 25#ms
 FASTEST_SPAWNING = 0.3#sec
 INFINITE_AMMO = "kilburn"
+BOOM = "boom"
 
 def calcDistanceVector(point1, point2):
 	return (point2[0] - point1[0], point2[1] - point1[1])
@@ -129,7 +130,7 @@ class Reticle(Object):
 		self.ID = self.CANVAS.create_line(xy, fill='red')
 
 class Projectile(Object):
-	SPEED = 15
+	SPEED = 25
 	SIZE = 14
 	VECTOR = []
 	def goal2AdjustedtedVector(self, starting_xy, goal_xy):
@@ -143,8 +144,8 @@ class Projectile(Object):
 
 class Enemy(Object):
 	WORTH = 10
-	SIZE = 50
-	SPEED = 4
+	SIZE = 55
+	SPEED = 10
 	def create(self, xy):
 		self.ID = self.CANVAS.create_oval(xy, fill='dark green')
 
@@ -230,22 +231,18 @@ class EnemyManager():
 
 class AmmoTracker():
 	SEC_TO_RELOAD = 0.5
-
 	OBJ = 0 # id of the object whose ammo we are tracking
-
 
 	def __init__(self, obj):
 		self.OBJ = obj
 		self.reload_started_at = time()
 		self.current_ammo = MAX_AMMO
 
-
 	def tryToReload(self):
 		if self.current_ammo < MAX_AMMO:
 			if time() - self.reload_started_at > self.SEC_TO_RELOAD:
 				self.current_ammo += 1
 				self.reload_started_at = time()
-
 
 	def shoot(self, event):
 		if self.current_ammo > 0:
@@ -362,11 +359,17 @@ class Game:
 
 			# add to cheat string
 			self.current_cheat_string += event.char
-			if INFINITE_AMMO[0:len(self.current_cheat_string)] != self.current_cheat_string:
-				self.current_cheat_string = event.char
-
-			elif INFINITE_AMMO == self.current_cheat_string:
-				self.player.AMMO_TRACKER.current_ammo = 9999
+			for cheat in [INFINITE_AMMO, BOOM]:
+				if cheat[0:len(self.current_cheat_string)] == self.current_cheat_string:
+					if self.current_cheat_string == INFINITE_AMMO:
+						self.player.AMMO_TRACKER.current_ammo = 9999
+					elif self.current_cheat_string == BOOM:
+						x = self.windowManager.getResolution()[0]
+						for y in range(0, self.windowManager.getResolution()[1], Projectile.SIZE):
+							ProjectileManager.createProjectile(self.player.getCenter(), [x, y])
+					break
+			else:
+				self.current_cheat_string = event.char # no cheat begins with these chars
 
 
 	def initialAssetLoad(self):
@@ -404,8 +407,8 @@ class Game:
 			EnemyManager.ENEMIES.append(e)
 
 	def loop(self):
-		last_frame_time = time()
 		while HealthTracker.hp > 0 and not (self.SAVE_AND_MENU or self.SAVE_AND_BOSSKEY):
+			frame_start_time = time()
 			self.player.AMMO_TRACKER.tryToReload()
 			ProjectileManager.manage()
 			EnemyManager.manage()
@@ -413,13 +416,11 @@ class Game:
 			self.frame.update()
 			# adjust the delay between frames depending on
 			# how long the operations needed took
-			delay = TIME_BETWEEN_FRAMES - (time() -last_frame_time) * 1000
-			print(delay)
+			delay = TIME_BETWEEN_FRAMES - (time()-frame_start_time) * 1000
 			delay = int(round(delay, 0))
 			if delay < 0:
 				delay = 0
 			self.frame.after(delay)
-			last_frame_time = time()
 
 
 		self.unbindKeys()
