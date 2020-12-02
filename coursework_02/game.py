@@ -178,11 +178,8 @@ class ProjectileManager():
 		ProjectileManager.moveAllProjectiles()
 
 class EnemyManager():
-	CANVAS = 0
-	ENEMIES = []
-	SPAWN_INTERVAL = 2#seconds
-	LAST_SPAWN=0
 	def __init__(self, canvas, windowManager):
+		EnemyManager.SPAWN_INTERVAL = 2#seconds
 		EnemyManager.CANVAS = canvas
 		EnemyManager.LAST_SPAWN = time()
 		EnemyManager.ENEMIES = []
@@ -198,7 +195,7 @@ class EnemyManager():
 			EnemyManager.ENEMIES.append(e)
 			EnemyManager.LAST_SPAWN = time()
 			if EnemyManager.SPAWN_INTERVAL > FASTEST_SPAWNING:
-				EnemyManager.SPAWN_INTERVAL *= 0.99
+				EnemyManager.SPAWN_INTERVAL *= 0.98
 
 	@staticmethod
 	def killEnemy(e):
@@ -295,7 +292,7 @@ class UI:
 
 	def update(self):	
 		self.canvas.itemconfig(self.score, text="Score: " + str(ScoreTracker.score))
-		self.canvas.itemconfig(self.ammo, text="Ammo: " + str(self.player.AMMO_TRACKER.current_ammo))
+		self.canvas.itemconfig(self.ammo, text="Ammo: %d/%d" % (self.player.AMMO_TRACKER.current_ammo, MAX_AMMO))
 		self.canvas.itemconfig(self.health, text="Health: " + str(HealthTracker.hp))
 
 

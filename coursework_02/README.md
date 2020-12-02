@@ -4,6 +4,8 @@ Shoot enemies for as long as you can!
 
 ------------------------------------
 
+Run "main.py" file to play.
+
 Use your mouse to aim and shoot.
 
 Move up and down with 'w' and 's' respectively. 

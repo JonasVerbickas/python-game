@@ -14,6 +14,8 @@ class WindowManager():
 		self.boss_image = PhotoImage(file='bosskey.gif')
 		self.menu_image = PhotoImage(file='menubackground.gif')
 		self.createHiddenBossKey()
+		with open('options.json', 'r') as f:
+			self.window.bind(load(f)['bosskey'], self.pressedBossKey)
 		self.menu()
 
 	def getResolution(self):
@@ -47,9 +49,7 @@ class WindowManager():
 
 	def menu(self):
 		new_frame = self.createCleanFrame()
-		with open('options.json', 'r') as f:
-			self.window.bind(load(f)['bosskey'], self.pressedBossKey)
-			Menu(new_frame, self)
+		Menu(new_frame, self)
 
 	def leaderboard(self):
 		new_frame = self.createCleanFrame()
