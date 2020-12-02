@@ -1,5 +1,5 @@
 from tkinter import Tk
-from WindowManager import WindowManager
+from scripts.WindowManager import WindowManager
 
 
 RESOLUTION = (1280, 720)
