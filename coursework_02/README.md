@@ -1,4 +1,4 @@
-# PEW PEW
+**PEW PEW**
 
 Shoot enemies for as long as you can!
 
@@ -13,8 +13,8 @@ Move up and down with 'w' and 's' respectively.
 
 -------------------------------------
 
-##Cheats:
+Cheats:
 	
 "kirburn" - infinite ammo
----------------
+
 "boom" - to go boom
