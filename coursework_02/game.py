@@ -8,7 +8,7 @@ from os.path import isfile
 
 MAX_AMMO = 5
 MAX_HEALTH = 2
-TIME_BETWEEN_FRAMES = 4#ms
+TIME_BETWEEN_FRAMES = 20#ms
 FASTEST_SPAWNING = 0.3#sec
 INFINITE_AMMO = "kilburn"
 
@@ -404,13 +404,23 @@ class Game:
 			EnemyManager.ENEMIES.append(e)
 
 	def loop(self):
+		last_frame_time = time()
 		while HealthTracker.hp > 0 and not (self.SAVE_AND_MENU or self.SAVE_AND_BOSSKEY):
 			self.player.AMMO_TRACKER.tryToReload()
 			ProjectileManager.manage()
 			EnemyManager.manage()
 			self.ui.update()
 			self.frame.update()
-			self.frame.after(TIME_BETWEEN_FRAMES)
+			# adjust the delay between frames depending on
+			# how long the operations needed took
+			delay = TIME_BETWEEN_FRAMES - (time() -last_frame_time) * 1000
+			print(delay)
+			delay = int(round(delay, 0))
+			if delay < 0:
+				delay = 0
+			self.frame.after(delay)
+			last_frame_time = time()
+
 
 		self.unbindKeys()
 		if self.SAVE_AND_MENU:
