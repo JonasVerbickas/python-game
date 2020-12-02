@@ -1,4 +1,4 @@
-from tkinter import Tk, Frame, Canvas, messagebox, Button, W, E
+from tkinter import Tk, Frame, Canvas, Button, W, E
 from math import sqrt
 from random import randint
 from time import time

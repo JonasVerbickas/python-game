@@ -41,7 +41,6 @@ class LeaderBoard():
 		back_button.place(relx=0.2, rely=0.15)
 
 		list_of_leaders = self.getSortedListOfLeaders()
-		print(list_of_leaders)
 		grid_of_leaders = Canvas(canvas, width=500, height=500)
 		grid_of_leaders.place(relx=0.5, rely=0.45, anchor=CENTER)
 		for leader_i in range(len(list_of_leaders)):
