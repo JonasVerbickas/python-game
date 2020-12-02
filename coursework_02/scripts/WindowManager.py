@@ -12,7 +12,7 @@ class WindowManager():
 		self.window= window
 		self.resolution = resolution
 		self.boss_image = PhotoImage(file='assets/bosskey.gif')
-		self.menu_image = PhotoImage(file='assets/menubackground.gif')
+		self.menu_image = PhotoImage(file='assets/movedmenubackground.gif')
 		self.createHiddenBossKey()
 		option_file = open('options.json', 'r')
 		self.window.bind(load(option_file)['bosskey'], self.pressedBossKey)
