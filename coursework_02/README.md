@@ -14,4 +14,4 @@ Move up and down with 'w' and 's' respectively.
 Cheats:
 	
 "kirburn" - infinite ammo
-
+"boom" - to go boom

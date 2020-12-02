@@ -307,6 +307,7 @@ class Game:
 		self.SAVE_AND_BOSSKEY = False
 		self.windowManager = windowManager
 		self.frame = frame
+		self.frame.focus_force()
 		self.initialAssetLoad()
 		if loadSave:
 			self.loadFromFile()
@@ -364,8 +365,14 @@ class Game:
 					if self.current_cheat_string == INFINITE_AMMO:
 						self.player.AMMO_TRACKER.current_ammo = 9999
 					elif self.current_cheat_string == BOOM:
+						# top and bottom
+						y = self.windowManager.getResolution()[1]
+						for x in range(0, self.windowManager.getResolution()[0], Projectile.SIZE):
+							ProjectileManager.createProjectile(self.player.getCenter(), [x, 0])
+							ProjectileManager.createProjectile(self.player.getCenter(), [x, y])
+						# right
 						x = self.windowManager.getResolution()[0]
-						for y in range(0, self.windowManager.getResolution()[1], Projectile.SIZE):
+						for y in range(0, self.windowManager.getResolution()[1], Projectile.SIZE/2):
 							ProjectileManager.createProjectile(self.player.getCenter(), [x, y])
 					break
 			else:
