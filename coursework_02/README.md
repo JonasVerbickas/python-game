@@ -1,4 +1,4 @@
-##PEW PEW
+# PEW PEW
 
 Run "main.py" file to play.
 
@@ -9,14 +9,14 @@ Move up and down with 'w' and 's' respectively.
 
 Hold off enemies for as long as you can!
 
--------------------------------------
+---
 
 Cheats:
 	
-"kirburn" - infinite ammo
+- "kirburn" - infinite ammo
 
-"boom" - to go boom
+- "boom" - to go boom
 
-"life" - to get more lives
+- "life" - to get more lives
 
-"tenet" - to active spacebar functionality
+- "tenet" - to active spacebar functionality
