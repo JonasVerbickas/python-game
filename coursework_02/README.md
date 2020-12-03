@@ -1,4 +1,4 @@
-#PEW PEW
+##PEW PEW
 
 Run "main.py" file to play.
 
@@ -16,3 +16,7 @@ Cheats:
 "kirburn" - infinite ammo
 
 "boom" - to go boom
+
+"life" - to get more lives
+
+"tenet" - to active spacebar functionality

@@ -12,7 +12,9 @@ TIME_BETWEEN_FRAMES = 25  #ms
 FASTEST_SPAWNING = 0.3  #sec
 INFINITE_AMMO = "kilburn"
 BOOM = "boom"
-
+LIFE = "life"
+TENET = False
+TENET_ACTIVATABLE = False
 
 def calcDistanceVector(point1, point2):
     return (point2[0] - point1[0], point2[1] - point1[1])
@@ -64,13 +66,15 @@ class Pause():
 
 
 def outOfBounds(obj, bounds):
-        # horizontal
-        if obj.getXY()[0] > bounds[0] or obj.getXY()[2] < 0:
-            return True
-        elif obj.getXY()[1] < 0 or obj.getXY()[3] > bounds[1]:
-            return True
-        else:
-            return False
+    mult = 2
+    bounds = [mult*b for b in bounds]
+    # horizontal
+    if obj.getXY()[0] > bounds[0] or obj.getXY()[2] < -bounds[0]:
+        return True
+    elif obj.getXY()[1] < -bounds[1] or obj.getXY()[3] > bounds[1]:
+        return True
+    else:
+        return False
 
 
 def collision(obj1, obj2):
@@ -147,6 +151,8 @@ class Projectile(Object):
 
     def create(self, starting_xy, goal_xy):
         self.VECTOR = self.goal2AdjustedtedVector(starting_xy, goal_xy)
+        if TENET:
+            self.VECTOR = [-self.VECTOR[0], -self.VECTOR[1]]
         xy = createCoordsFromCenter(starting_xy, self.SIZE)
         self.ID = self.CANVAS.create_rectangle(xy, fill='black', outline='red')
 
@@ -187,7 +193,10 @@ class ProjectileManager():
                 ProjectileManager.CANVAS.delete(p.ID)
                 ProjectileManager.PROJECTILES.remove(p)
             else:
-                ProjectileManager.CANVAS.move(p.ID, p.VECTOR[0], p.VECTOR[1])
+                if TENET:
+                    ProjectileManager.CANVAS.move(p.ID, -p.VECTOR[0], -p.VECTOR[1])
+                else:
+                    ProjectileManager.CANVAS.move(p.ID, p.VECTOR[0], p.VECTOR[1])
 
     @staticmethod
     def manage():
@@ -230,7 +239,6 @@ class EnemyManager():
             elif e.getXY()[0] < e.SIZE:
                 HealthTracker.hp -= 1
                 EnemyManager.killEnemy(e)
-
             else:
                 for p in list(ProjectileManager.PROJECTILES):
                     if collision(p, e):
@@ -239,7 +247,10 @@ class EnemyManager():
                         ProjectileManager.killProjectile(p)
                         break
                 else:
-                    EnemyManager.CANVAS.move(e.ID, -e.SPEED, 0)
+                    if TENET:
+                        EnemyManager.CANVAS.move(e.ID, e.SPEED, 0)
+                    else:
+                        EnemyManager.CANVAS.move(e.ID, -e.SPEED, 0)
 
     @staticmethod
     def manage():
@@ -341,7 +352,8 @@ class Game:
         window.bind("<ButtonRelease-1>", self.player.AMMO_TRACKER.shoot)
         window.bind("<Motion>", self.player.RETICLE.aim)
         window.bind("<Key>", self.recordInput)
-        window.unbind(self.options['bosskey'])
+        window.bind("<space>", self.tenet)
+        window.unbind(self.options['bosskey']) # we unbind and use <key> later 
 
     def unbindKeys(self):
         with open('options.json', 'r') as option_file:
@@ -351,6 +363,7 @@ class Game:
         window.unbind("<ButtonRelease-1>")
         window.unbind("<Motion>")
         window.unbind("<Key>")
+        window.unbind("<space>")
 
     def createGlobalStatTrackers(self):
         ProjectileManager(self.sky, self.windowManager)
@@ -367,6 +380,15 @@ class Game:
     def saveAndBosskey(self):
         self.SAVE_AND_BOSSKEY = True
 
+    def tenet(self, event):
+        if TENET_ACTIVATABLE:
+            global TENET
+            TENET = not TENET
+            if TENET:
+                self.sky.configure(bg='brown1')
+            else:
+                self.sky.configure(bg='sky blue')
+
     def recordInput(self, event):
         if event.char.isalnum():
             # check if the button does something
@@ -380,7 +402,7 @@ class Game:
 
             # add to cheat string
             self.current_cheat_string += event.char
-            for cheat in [INFINITE_AMMO, BOOM]:
+            for cheat in [INFINITE_AMMO, BOOM, LIFE, "tenet"]:
                 if cheat[0:len(self.current_cheat_string)] == self.current_cheat_string:
                     if self.current_cheat_string == INFINITE_AMMO:
                         self.player.AMMO_TRACKER.current_ammo = 9999
@@ -394,6 +416,11 @@ class Game:
                         x = self.windowManager.getResolution()[0]
                         for y in range(0, self.windowManager.getResolution()[1], Projectile.SIZE/2):
                             ProjectileManager.createProjectile(self.player.getCenter(), [x, y])
+                    elif self.current_cheat_string == LIFE:
+                        HealthTracker.hp = 100
+                    elif self.current_cheat_string == "tenet":
+                        global TENET_ACTIVATABLE
+                        TENET_ACTIVATABLE=True
                     break
             else:
                 self.current_cheat_string = event.char  # no cheat begins with these chars
