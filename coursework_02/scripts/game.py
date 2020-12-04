@@ -140,7 +140,7 @@ class Reticle(Object):
 
 
 class Projectile(Object):
-    SPEED = 25
+    SPEED = 26
     SIZE = 14
     VECTOR = []
 
@@ -160,10 +160,13 @@ class Projectile(Object):
 class Enemy(Object):
     WORTH = 10
     SIZE = 55
-    SPEED = 12
+    SPEED = 8
+    MAX_SPEED = 12
 
     def create(self, xy):
         self.ID = self.CANVAS.create_oval(xy, fill='dark green')
+        if Enemy.SPEED < Enemy.MAX_SPEED:
+            Enemy.SPEED *= 1.05
 
 
 class ProjectileManager():
@@ -469,7 +472,6 @@ class Game:
             # how long the operations needed took
             delay = TIME_BETWEEN_FRAMES - (time()-frame_start_time) * 1000
             delay = int(round(delay, 0))
-            print(delay)
             if delay < 0:
                 delay = 0
             self.frame.after(delay)
