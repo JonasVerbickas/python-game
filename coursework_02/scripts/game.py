@@ -160,7 +160,7 @@ class Projectile(Object):
 class Enemy(Object):
     WORTH = 10
     SIZE = 55
-    SPEED = 10
+    SPEED = 12
 
     def create(self, xy):
         self.ID = self.CANVAS.create_oval(xy, fill='dark green')
@@ -259,7 +259,7 @@ class EnemyManager():
 
 
 class AmmoTracker():
-    SEC_TO_RELOAD = 0.5
+    SEC_TO_RELOAD = 0.4
     OBJ = 0  # id of the object whose ammo we are tracking
 
     def __init__(self, obj):
@@ -385,7 +385,7 @@ class Game:
             global TENET
             TENET = not TENET
             if TENET:
-                self.sky.configure(bg='brown1')
+                self.sky.configure(bg='salmon1')
             else:
                 self.sky.configure(bg='SlateGray1')
 
@@ -414,7 +414,7 @@ class Game:
                             ProjectileManager.createProjectile(self.player.getCenter(), [x, y])
                         # right
                         x = self.windowManager.getResolution()[0]
-                        for y in range(0, self.windowManager.getResolution()[1], Projectile.SIZE/2):
+                        for y in range(0, self.windowManager.getResolution()[1], Projectile.SIZE//2):
                             ProjectileManager.createProjectile(self.player.getCenter(), [x, y])
                     elif self.current_cheat_string == LIFE:
                         HealthTracker.hp = 100
@@ -426,7 +426,7 @@ class Game:
                 self.current_cheat_string = event.char  # no cheat begins with these chars
 
     def initialAssetLoad(self):
-        self.sky = Canvas(self.frame, width=self.windowManager.getResolution()[0], height=self.windowManager.getResolution()[1], background='sky blue')
+        self.sky = Canvas(self.frame, width=self.windowManager.getResolution()[0], height=self.windowManager.getResolution()[1], background='SlateGray1')
         self.sky.pack()
 
         starting_point = (50, self.windowManager.getResolution()[1]/2)

@@ -76,3 +76,7 @@ class WindowManager():
                 frame.pack_forget()
             else:
                 frame.pack()
+
+    def quit(self):
+        self.window.quit()
+        self.window.destroy()
