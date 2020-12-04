@@ -1,4 +1,4 @@
-from tkinter import Tk, Frame, Canvas, Button
+from tkinter import Frame, Canvas, Button, Toplevel
 from math import sqrt
 from random import randint
 from time import time
@@ -45,9 +45,8 @@ class Pause():
         self.game = game
         self.game.unbindKeys()
         if Pause.PAUSE_WINDOW == 0:  # not paused
-            Pause.PAUSE_WINDOW = Tk()
-            Pause.PAUSE_WINDOW.geometry("200x200+500+300")
-            Pause.PAUSE_WINDOW.overrideredirect(True)
+            Pause.PAUSE_WINDOW = Toplevel(self.game.windowManager.window)
+            Pause.PAUSE_WINDOW.overrideredirect(True)  # removes borders
             canvas = Canvas(Pause.PAUSE_WINDOW, bg='white')
             canvas.pack()
             canvas.create_text(100, 32, text="PAUSED", font=("Arial", 32))
@@ -58,6 +57,9 @@ class Pause():
             # updates the pause window if it isn't destroyed
             try:
                 while Pause.PAUSE_WINDOW != 0:
+                    x_offset = self.game.windowManager.window.winfo_rootx()+535
+                    y_offset = self.game.windowManager.window.winfo_rooty()+230
+                    Pause.PAUSE_WINDOW.geometry(("200x200+%d+%d") % (x_offset, y_offset))
                     Pause.PAUSE_WINDOW.lift()
                     Pause.PAUSE_WINDOW.update()
                 Pause.PAUSE_WINDOW.mainloop()
@@ -162,11 +164,12 @@ class Enemy(Object):
     SIZE = 55
     SPEED = 8
     MAX_SPEED = 12
+    MULT = 1.02 # 20 to reach max
 
     def create(self, xy):
         self.ID = self.CANVAS.create_oval(xy, fill='dark green')
         if Enemy.SPEED < Enemy.MAX_SPEED:
-            Enemy.SPEED *= 1.05
+            Enemy.SPEED *= Enemy.MULT
 
 
 class ProjectileManager():
