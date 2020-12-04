@@ -217,7 +217,7 @@ class EnemyManager():
             w = EnemyManager.windowManager.getResolution()[0]
             h = EnemyManager.windowManager.getResolution()[1]
             e = Enemy(EnemyManager.CANVAS)
-            xy = createCoordsFromCenter([w, randint(0, h)], e.SIZE)
+            xy = createCoordsFromCenter([w, randint(0, h-e.SIZE)], e.SIZE)
             e.create(xy)
             EnemyManager.ENEMIES.append(e)
             EnemyManager.LAST_SPAWN = time()
@@ -469,6 +469,7 @@ class Game:
             # how long the operations needed took
             delay = TIME_BETWEEN_FRAMES - (time()-frame_start_time) * 1000
             delay = int(round(delay, 0))
+            print(delay)
             if delay < 0:
                 delay = 0
             self.frame.after(delay)

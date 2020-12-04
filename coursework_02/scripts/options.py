@@ -77,14 +77,17 @@ class Options():
 
         self.options = self.getOptions()
 
-        up_button = Button(self.canvas, text=("Move Up: '%s'" % (self.options['up'])), bg='white', command=self.waitForNewUp, padx=60, pady=25)
-        up_button.place(relx=0.5, rely=0.3, anchor="center")
+        self.options_grid = Canvas(self.canvas, width=500, height=500)
+        self.options_grid.place(relx=0.5, rely=0.4, anchor="center")
 
-        down_button = Button(self.canvas, text=("Move Down: '%s'" % (self.options['down'])), bg='white', command=self.waitForNewDown, padx=60, pady=25)
-        down_button.place(relx=0.5, rely=0.42, anchor="center")
+        up_button = Button(self.options_grid, text=("Move Up: '%s'" % (self.options['up'])), bg='white', command=self.waitForNewUp, padx=60, pady=25)
+        up_button.grid(row=0,pady=10, padx=10, sticky="nsew")
 
-        down_button = Button(self.canvas, text=("Boss Key: '%s'" % (self.options['bosskey'])), bg='white', command=self.waitForNewBossKey, padx=60, pady=25)
-        down_button.place(relx=0.5, rely=0.54, anchor="center")
+        down_button = Button(self.options_grid, text=("Move Down: '%s'" % (self.options['down'])), bg='white', command=self.waitForNewDown, padx=60, pady=25)
+        down_button.grid(row=1,pady=5, padx=10, sticky="nsew")
+
+        boss_button = Button(self.options_grid, text=("Boss Key: '%s'" % (self.options['bosskey'])), bg='white', command=self.waitForNewBossKey, padx=60, pady=25)
+        boss_button.grid(row=2,pady=10, padx=10, sticky="nsew")
 
         self.back_button = Button(self.canvas, text="BACK", command=self.windowManager.menu, bg='white', padx=30, pady=20)
         self.back_button.place(relx=0.2, rely=0.15)
