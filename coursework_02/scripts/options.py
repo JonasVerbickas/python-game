@@ -20,8 +20,8 @@ class Options():
         option_file.close()     
 
     def changeKeyPopUp(self):
-        width = 300
-        height = 250
+        width = 350
+        height = 300
         self.popup = Canvas(self.frame, width=width, height=height, bg='black')
         self.popup.place(relx=0.5, rely=0.4, anchor="center")
         self.popup.create_text(width/2, height/2, text="Press a key that you want to use", fill='white', font=("Arial", 20))
@@ -31,6 +31,7 @@ class Options():
     def changeUp(self, event):
         if event.char in self.options.values() and event.char != self.options['up']:
             messagebox.showwarning("Warning", "Key already in use!")
+            self.windowManager.window.focus_force()
         elif event.char.isalnum():
             self.options['up'] = event.char
             self.frame.master.unbind("<Key>")
@@ -44,6 +45,7 @@ class Options():
     def changeDown(self, event):
         if event.char in self.options.values() and event.char != self.options['down']:
             messagebox.showwarning("Warning", "Key already in use!")
+            self.windowManager.window.focus_force()
         elif event.char.isalnum():
             self.options['down'] = event.char
             self.frame.master.unbind("<Key>")
@@ -57,6 +59,7 @@ class Options():
     def changeBossKey(self, event):
         if event.char in self.options.values() and event.char != self.options['bosskey']:
             messagebox.showwarning("Warning", "Key already in use!")
+            self.windowManager.window.focus_force()
         elif event.char.isalnum():
             self.options['bosskey'] = event.char
             self.windowManager.window.bind(self.options['bosskey'], self.windowManager.pressedBossKey)

@@ -22,4 +22,4 @@ Hold off enemies for as long as you can!
 
 ## Assets
 
-- Main menu background is amde by asimuz from ansimuz.itch.io/hazy-urban-landscape?download
+- Main menu background is made by *asimuz* from [itch.io](ansimuz.itch.io/hazy-urban-landscape?download)
