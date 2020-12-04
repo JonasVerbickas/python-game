@@ -1,9 +1,9 @@
 from tkinter import Frame, messagebox, PhotoImage
-from game import Game
-from menu import Menu
-from leaderboard import LeaderBoard
-from options import Options
-from bossKey import BossKey
+from scripts.game import Game
+from scripts.menu import Menu
+from scripts.leaderboard import LeaderBoard
+from scripts.options import Options
+from scripts.bossKey import BossKey
 from json import load
 
 
@@ -13,7 +13,7 @@ class WindowManager():
         self.window= window
         self.resolution = resolution
         self.boss_image = PhotoImage(file='assets/bosskey.gif')
-        self.menu_image = PhotoImage(file='assets/movedmenubackground.gif')
+        self.menu_image = PhotoImage(file='assets/newbackground.gif')
         self.createHiddenBossKey()
         option_file = open('options.json', 'r')
         self.window.bind(load(option_file)['bosskey'], self.pressedBossKey)

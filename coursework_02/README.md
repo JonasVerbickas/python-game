@@ -9,9 +9,7 @@ Move up and down with 'w' and 's' respectively.
 
 Hold off enemies for as long as you can!
 
----
-
-Cheats:
+## Cheats
 	
 - "kirburn" - infinite ammo
 
@@ -20,3 +18,8 @@ Cheats:
 - "life" - to get more lives
 
 - "tenet" - to active spacebar functionality
+
+
+## Assets
+
+- Main menu background is amde by asimuz from ansimuz.itch.io/hazy-urban-landscape?download
