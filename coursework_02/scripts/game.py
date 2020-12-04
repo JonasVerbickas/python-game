@@ -1,4 +1,4 @@
-from tkinter import Tk, Frame, Canvas, Button, W, E
+from tkinter import Tk, Frame, Canvas, Button
 from math import sqrt
 from random import randint
 from time import time
@@ -52,9 +52,9 @@ class Pause():
             canvas.pack()
             canvas.create_text(100, 32, text="PAUSED", font=("Arial", 32))
             resume_button = Button(canvas, text='Resume', command=self.resume)
-            resume_button.place(relx=0.3, rely=0.5)
+            resume_button.place(relx=0.5, rely=0.5, anchor="center")
             quit_button = Button(canvas, text='Save and Quit', command=self.quit)
-            quit_button.place(relx=0.2, rely=0.7)
+            quit_button.place(relx=0.5, rely=0.7, anchor="center")
             # updates the pause window if it isn't destroyed
             try:
                 while Pause.PAUSE_WINDOW != 0:
@@ -322,8 +322,8 @@ class UI:
         self.canvas = canvas
         self.player = player
         self.score = self.canvas.create_text(640, 20, text="Score: 0", font=("Arial", 20, 'bold'))
-        self.ammo = self.canvas.create_text(1260, 20, text="Ammo: 0", font=("Arial", 20, 'bold'), anchor=E)
-        self.health = self.canvas.create_text(10, 20, text="Health: 0", font=("Arial", 20, 'bold'), anchor=W)
+        self.ammo = self.canvas.create_text(1260, 20, text="Ammo: 0", font=("Arial", 20, 'bold'), anchor='e')
+        self.health = self.canvas.create_text(10, 20, text="Health: 0", font=("Arial", 20, 'bold'), anchor='w')
 
     def update(self):
         self.canvas.itemconfig(self.score, text="Score: " + str(ScoreTracker.score))
