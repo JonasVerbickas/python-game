@@ -26,17 +26,17 @@ class Menu():
         self.name_field.place(relx=0.5, rely=0.1, anchor="center")
         self.name_field.insert(0, 'ENTER NAME')
 
-        resume_button = Button(canvas, text="RESUME", padx=60, pady=30, bg='sky blue', fg='black', command=self.loadGameAndSaveName)
+        resume_button = Button(canvas, text="RESUME", padx=60, pady=30, bg='white', fg='black', command=self.loadGameAndSaveName)
         resume_button.place(relx=0.5, rely=0.2, anchor="center")
 
         if not isfile('save.json'):
             resume_button['state'] = DISABLED
 
-        start_new_button = Button(canvas, text="START", padx=60, pady=30, bg='sky blue', fg='black', command=self.startGameAndSaveName)
+        start_new_button = Button(canvas, text="START", padx=60, pady=30, bg='white', fg='black', command=self.startGameAndSaveName)
         start_new_button.place(relx=0.5, rely=0.35, anchor="center")
 
-        leaderboard_button = Button(canvas, text="LEADERBOARD", padx=60, pady=30, bg='sky blue', fg='black', command=self.windowManager.leaderboard)
+        leaderboard_button = Button(canvas, text="LEADERBOARD", padx=60, bg='white', pady=30, fg='black', command=self.windowManager.leaderboard)
         leaderboard_button.place(relx=0.5, rely=0.5, anchor="center")
 
-        options_button = Button(canvas, text="OPTIONS", padx=60, pady=30, bg='sky blue', fg='black', command=self.windowManager.options)
+        options_button = Button(canvas, text="OPTIONS", padx=60, pady=30, bg='white', fg='black', command=self.windowManager.options)
         options_button.place(relx=0.5, rely=0.65, anchor="center")

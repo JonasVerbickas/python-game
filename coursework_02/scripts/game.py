@@ -48,13 +48,13 @@ class Pause():
             Pause.PAUSE_WINDOW = Tk()
             Pause.PAUSE_WINDOW.geometry("200x200+500+300")
             Pause.PAUSE_WINDOW.overrideredirect(True)
-            canvas = Canvas(Pause.PAUSE_WINDOW)
+            canvas = Canvas(Pause.PAUSE_WINDOW, bg='white')
             canvas.pack()
             canvas.create_text(100, 32, text="PAUSED", font=("Arial", 32))
-            resume_button = Button(canvas, text='Resume', command=self.resume)
+            resume_button = Button(canvas, text='Resume', command=self.resume, padx=15, pady=8, bg='white')
             resume_button.place(relx=0.5, rely=0.5, anchor="center")
-            quit_button = Button(canvas, text='Save and Quit', command=self.quit)
-            quit_button.place(relx=0.5, rely=0.7, anchor="center")
+            quit_button = Button(canvas, text='Save and Quit', command=self.quit, padx=15, pady=8, bg='white')
+            quit_button.place(relx=0.5, rely=0.75, anchor="center")
             # updates the pause window if it isn't destroyed
             try:
                 while Pause.PAUSE_WINDOW != 0:
@@ -387,7 +387,7 @@ class Game:
             if TENET:
                 self.sky.configure(bg='brown1')
             else:
-                self.sky.configure(bg='sky blue')
+                self.sky.configure(bg='SlateGray1')
 
     def recordInput(self, event):
         if event.char.isalnum():

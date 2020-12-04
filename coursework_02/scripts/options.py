@@ -77,14 +77,14 @@ class Options():
 
         self.options = self.getOptions()
 
-        up_button = Button(self.canvas, text=("Move Up: '%s'" % (self.options['up'])), command=self.waitForNewUp, bg="sky blue", padx=10, pady=20)
+        up_button = Button(self.canvas, text=("Move Up: '%s'" % (self.options['up'])), bg='white', command=self.waitForNewUp, padx=60, pady=25)
         up_button.place(relx=0.5, rely=0.3, anchor="center")
 
-        down_button = Button(self.canvas, text=("Move Down: '%s'" % (self.options['down'])), command=self.waitForNewDown, bg="sky blue", padx=10, pady=20)
+        down_button = Button(self.canvas, text=("Move Down: '%s'" % (self.options['down'])), bg='white', command=self.waitForNewDown, padx=60, pady=25)
         down_button.place(relx=0.5, rely=0.42, anchor="center")
 
-        down_button = Button(self.canvas, text=("Boss Key: '%s'" % (self.options['bosskey'])), command=self.waitForNewBossKey, bg="sky blue", padx=10, pady=20)
+        down_button = Button(self.canvas, text=("Boss Key: '%s'" % (self.options['bosskey'])), bg='white', command=self.waitForNewBossKey, padx=60, pady=25)
         down_button.place(relx=0.5, rely=0.54, anchor="center")
 
-        self.back_button = Button(self.canvas, text="BACK", command=self.windowManager.menu, bg="sky blue", padx=30, pady=20)
+        self.back_button = Button(self.canvas, text="BACK", command=self.windowManager.menu, bg='white', padx=30, pady=20)
         self.back_button.place(relx=0.2, rely=0.15)
