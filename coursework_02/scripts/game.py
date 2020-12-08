@@ -8,13 +8,14 @@ from os.path import isfile
 
 MAX_AMMO = 5
 MAX_HEALTH = 2
-TIME_BETWEEN_FRAMES = 25  #ms
-FASTEST_SPAWNING = 0.3  #sec
+TIME_BETWEEN_FRAMES = 25  # ms
+FASTEST_SPAWNING = 0.3  # sec
 INFINITE_AMMO = "kilburn"
 BOOM = "boom"
 LIFE = "life"
 TENET = False
 TENET_ACTIVATABLE = False
+
 
 def calcDistanceVector(point1, point2):
     return (point2[0] - point1[0], point2[1] - point1[1])
@@ -50,16 +51,21 @@ class Pause():
             canvas = Canvas(Pause.PAUSE_WINDOW, bg='white')
             canvas.pack()
             canvas.create_text(100, 32, text="PAUSED", font=("Arial", 32))
-            resume_button = Button(canvas, text='Resume', command=self.resume, padx=15, pady=8, bg='white')
+            resume_button = Button(canvas, text='Resume',
+                                   command=self.resume,
+                                   padx=15, pady=8, bg='white')
             resume_button.place(relx=0.5, rely=0.5, anchor="center")
-            quit_button = Button(canvas, text='Save and Quit', command=self.quit, padx=15, pady=8, bg='white')
+            quit_button = Button(canvas, text='Save and Quit',
+                                 command=self.quit,
+                                 padx=15, pady=8, bg='white')
             quit_button.place(relx=0.5, rely=0.75, anchor="center")
             # updates the pause window if it isn't destroyed
             try:
                 while Pause.PAUSE_WINDOW != 0:
                     x_offset = self.game.windowManager.window.winfo_rootx()+535
                     y_offset = self.game.windowManager.window.winfo_rooty()+230
-                    Pause.PAUSE_WINDOW.geometry(("200x200+%d+%d") % (x_offset, y_offset))
+                    geometry_string = ("200x200+%d+%d") % (x_offset, y_offset)
+                    Pause.PAUSE_WINDOW.geometry(geometry_string)
                     Pause.PAUSE_WINDOW.lift()
                     Pause.PAUSE_WINDOW.update()
                 Pause.PAUSE_WINDOW.mainloop()
@@ -101,7 +107,7 @@ class Object:
     def __init__(self, canvas):
         self.CANVAS = canvas
 
-    def distanceBetweenSelfAndPoint(self, point):
+    def distanceToAPoint(self, point):
         center_coords = self.getCenter()
         dist = calcDistanceVector(center_coords, point)
         return dist
@@ -119,23 +125,25 @@ class Object:
 
 class Reticle(Object):
     SIZE = 50
-    OBJECT_WHERE_IT_STARTS = 0
-    LAST_AIM_SPOT = [SIZE, 0]
+    master = 0
+    last_aimed_at = [SIZE, 0]
 
     def aim(self, event=None):
         if event is not None:
-            dist_vec = self.OBJECT_WHERE_IT_STARTS.distanceBetweenSelfAndPoint([event.x, event.y])
-            self.LAST_AIM_SPOT = [event.x, event.y]
+            dist_vec = self.master.distanceToAPoint([event.x, event.y])
+            self.last_aimed_at = [event.x, event.y]
         else:
-            dist_vec = self.OBJECT_WHERE_IT_STARTS.distanceBetweenSelfAndPoint([self.LAST_AIM_SPOT[0], self.LAST_AIM_SPOT[1]])
+            dist_vec = self.master.distanceToAPoint(self.last_aimed_at)
         dist_vec = shortenVector(dist_vec, self.SIZE)
         if dist_vec[0] > 0:
-            player_coords = self.OBJECT_WHERE_IT_STARTS.getCenter()
-            new_xy = (player_coords[0], player_coords[1], player_coords[0]+dist_vec[0], player_coords[1]+dist_vec[1])
+            player_coords = self.master.getCenter()
+            starting_xy = [player_coords[0], player_coords[1]]
+            end_xy = [player_coords[i]+dist_vec[i] for i in range(2)]
+            new_xy = starting_xy + end_xy
             self.CANVAS.coords(self.ID, new_xy)
 
     def create(self, starting_object):
-        self.OBJECT_WHERE_IT_STARTS = starting_object
+        self.master = starting_object
         center = starting_object.getCenter()
         xy = (center[0], center[1], center[0]+self.SIZE, center[1])
         self.ID = self.CANVAS.create_line(xy, fill='red')
@@ -153,6 +161,7 @@ class Projectile(Object):
 
     def create(self, starting_xy, goal_xy):
         self.VECTOR = self.goal2AdjustedtedVector(starting_xy, goal_xy)
+        global TENET
         if TENET:
             self.VECTOR = [-self.VECTOR[0], -self.VECTOR[1]]
         xy = createCoordsFromCenter(starting_xy, self.SIZE)
@@ -164,7 +173,7 @@ class Enemy(Object):
     SIZE = 55
     SPEED = 8
     MAX_SPEED = 12
-    MULT = 1.02 # 20 to reach max
+    MULT = 1.02  # 20 to reach max
 
     def create(self, xy):
         self.ID = self.CANVAS.create_oval(xy, fill='dark green')
@@ -198,11 +207,12 @@ class ProjectileManager():
             if outOfBounds(p, ProjectileManager.windowManager.getResolution()):
                 ProjectileManager.CANVAS.delete(p.ID)
                 ProjectileManager.PROJECTILES.remove(p)
+                continue
+            global TENET
+            if TENET:
+                ProjectileManager.CANVAS.move(p.ID, -p.VECTOR[0], -p.VECTOR[1])
             else:
-                if TENET:
-                    ProjectileManager.CANVAS.move(p.ID, -p.VECTOR[0], -p.VECTOR[1])
-                else:
-                    ProjectileManager.CANVAS.move(p.ID, p.VECTOR[0], p.VECTOR[1])
+                ProjectileManager.CANVAS.move(p.ID, p.VECTOR[0], p.VECTOR[1])
 
     @staticmethod
     def manage():
@@ -211,7 +221,7 @@ class ProjectileManager():
 
 class EnemyManager():
     def __init__(self, canvas, windowManager):
-        EnemyManager.SPAWN_INTERVAL = 2  #seconds
+        EnemyManager.SPAWN_INTERVAL = 2  # seconds
         EnemyManager.CANVAS = canvas
         EnemyManager.LAST_SPAWN = time()
         EnemyManager.ENEMIES = []
@@ -253,6 +263,7 @@ class EnemyManager():
                         ProjectileManager.killProjectile(p)
                         break
                 else:
+                    global TENET
                     if TENET:
                         EnemyManager.CANVAS.move(e.ID, e.SPEED, 0)
                     else:
@@ -283,7 +294,9 @@ class AmmoTracker():
         if self.current_ammo > 0:
             self.reload_started_at = time()
             self.current_ammo -= 1
-            ProjectileManager.createProjectile(self.OBJ.getCenter(), goal_xy=[self.OBJ.RETICLE.getXY()[2], self.OBJ.RETICLE.getXY()[3]])
+            starting_pos = self.OBJ.getCenter()
+            goal = [self.OBJ.RETICLE.getXY()[2], self.OBJ.RETICLE.getXY()[3]]
+            ProjectileManager.createProjectile(starting_pos, goal_xy=goal)
 
 
 class Player(Object):
@@ -306,7 +319,7 @@ class Player(Object):
         self.ID = self.CANVAS.create_oval(xy, fill="tomato")
         self.RETICLE = Reticle(self.CANVAS)
         self.RETICLE.create(self)
-        self.AMMO_TRACKER = AmmoTracker(self)
+        self.ammo_tracker = AmmoTracker(self)
 
 
 class HealthTracker:
@@ -327,19 +340,28 @@ class UI:
     def __init__(self, canvas, player):
         self.canvas = canvas
         self.player = player
-        self.score = self.canvas.create_text(640, 20, text="Score: 0", font=("Arial", 20, 'bold'))
-        self.ammo = self.canvas.create_text(1260, 20, text="Ammo: 0", font=("Arial", 20, 'bold'), anchor='e')
-        self.health = self.canvas.create_text(10, 20, text="Health: 0", font=("Arial", 20, 'bold'), anchor='w')
+        self.score = self.canvas.create_text(640, 20, text="Score: 0",
+                                             font=("Arial", 20, 'bold'))
+        self.ammo = self.canvas.create_text(1260, 20, text="Ammo: 0",
+                                            font=("Arial", 20, 'bold'),
+                                            anchor='e')
+        self.health = self.canvas.create_text(10, 20, text="Health: 0",
+                                              font=("Arial", 20, 'bold'),
+                                              anchor='w')
 
     def update(self):
-        self.canvas.itemconfig(self.score, text="Score: " + str(ScoreTracker.score))
-        self.canvas.itemconfig(self.ammo, text="Ammo: %d/%d" % (self.player.AMMO_TRACKER.current_ammo, MAX_AMMO))
-        self.canvas.itemconfig(self.health, text="Health: " + str(HealthTracker.hp))
+        score_str = "Score: " + str(ScoreTracker.score)
+        ammo_str = "Ammo: %d/%d" % (self.player.ammo_tracker.current_ammo,
+                                    MAX_AMMO)
+        health_str = "Health: " + str(HealthTracker.hp)
+        self.canvas.itemconfig(self.score, text=score_str)
+        self.canvas.itemconfig(self.ammo, text=ammo_str)
+        self.canvas.itemconfig(self.health, text=health_str)
 
 
 class Game:
     def __init__(self, frame, windowManager, loadSave=False):
-        self.current_cheat_string = ""
+        self.input_sequence = ""
         self.SAVE_AND_MENU = False
         self.SAVE_AND_BOSSKEY = False
         self.windowManager = windowManager
@@ -355,11 +377,12 @@ class Game:
             self.options = load(option_file)
         window = self.frame.master
         window.bind("<Escape>", self.pause)
-        window.bind("<ButtonRelease-1>", self.player.AMMO_TRACKER.shoot)
+        window.bind("<ButtonRelease-1>", self.player.ammo_tracker.shoot)
         window.bind("<Motion>", self.player.RETICLE.aim)
         window.bind("<Key>", self.recordInput)
         window.bind("<space>", self.tenet)
-        window.unbind(self.options['bosskey']) # we unbind and use <key> later 
+        # we unbind and use <key> instead
+        window.unbind(self.options['bosskey'])
 
     def unbindKeys(self):
         with open('options.json', 'r') as option_file:
@@ -372,6 +395,8 @@ class Game:
         window.unbind("<space>")
 
     def createGlobalStatTrackers(self):
+        global TENET_ACTIVATABLE
+        TENET_ACTIVATABLE = False
         ProjectileManager(self.sky, self.windowManager)
         HealthTracker()
         ScoreTracker()
@@ -387,6 +412,7 @@ class Game:
         self.SAVE_AND_BOSSKEY = True
 
     def tenet(self, event):
+        global TENET_ACTIVATABLE
         if TENET_ACTIVATABLE:
             global TENET
             TENET = not TENET
@@ -394,6 +420,46 @@ class Game:
                 self.sky.configure(bg='salmon1')
             else:
                 self.sky.configure(bg='SlateGray1')
+
+    def cheatLife(self):
+        HealthTracker.hp = 100
+
+    def cheatBoom(self):
+        resolution = self.windowManager.getResolution()
+        # top and bottom
+        y = resolution[1]
+        for x in range(0, resolution[0], Projectile.SIZE):
+            ProjectileManager.createProjectile(self.player.getCenter(), [x, 0])
+            ProjectileManager.createProjectile(self.player.getCenter(), [x, y])
+        # right
+        x = resolution[0]
+        for y in range(0, resolution[1], Projectile.SIZE//2):
+            ProjectileManager.createProjectile(self.player.getCenter(), [x, y])
+
+    def cheatAmmo(self):
+        self.player.ammo_tracker.current_ammo = 9999
+
+    def cheatTenet(self):
+        global TENET_ACTIVATABLE
+        TENET_ACTIVATABLE = True
+
+    def checkForCheats(self, input_sequence, event):
+        input_sequence += event.char
+        for cheat in [INFINITE_AMMO, BOOM, LIFE, "tenet"]:
+            if cheat[0:len(input_sequence)] == input_sequence:
+                if input_sequence == INFINITE_AMMO:
+                    self.cheatAmmo()
+                elif input_sequence == BOOM:
+                    self.cheatBoom()
+                elif input_sequence == LIFE:
+                    self.cheatLife()
+                elif input_sequence == "tenet":
+                    self.cheatTenet()
+                break
+        # no cheat begins with these chars
+        else:
+            input_sequence = event.char
+        return input_sequence
 
     def recordInput(self, event):
         if event.char.isalnum():
@@ -407,32 +473,14 @@ class Game:
                     self.saveAndBosskey()
 
             # add to cheat string
-            self.current_cheat_string += event.char
-            for cheat in [INFINITE_AMMO, BOOM, LIFE, "tenet"]:
-                if cheat[0:len(self.current_cheat_string)] == self.current_cheat_string:
-                    if self.current_cheat_string == INFINITE_AMMO:
-                        self.player.AMMO_TRACKER.current_ammo = 9999
-                    elif self.current_cheat_string == BOOM:
-                        # top and bottom
-                        y = self.windowManager.getResolution()[1]
-                        for x in range(0, self.windowManager.getResolution()[0], Projectile.SIZE):
-                            ProjectileManager.createProjectile(self.player.getCenter(), [x, 0])
-                            ProjectileManager.createProjectile(self.player.getCenter(), [x, y])
-                        # right
-                        x = self.windowManager.getResolution()[0]
-                        for y in range(0, self.windowManager.getResolution()[1], Projectile.SIZE//2):
-                            ProjectileManager.createProjectile(self.player.getCenter(), [x, y])
-                    elif self.current_cheat_string == LIFE:
-                        HealthTracker.hp = 100
-                    elif self.current_cheat_string == "tenet":
-                        global TENET_ACTIVATABLE
-                        TENET_ACTIVATABLE=True
-                    break
-            else:
-                self.current_cheat_string = event.char  # no cheat begins with these chars
+            self.input_sequence = self.checkForCheats(self.input_sequence,
+                                                      event)
 
     def initialAssetLoad(self):
-        self.sky = Canvas(self.frame, width=self.windowManager.getResolution()[0], height=self.windowManager.getResolution()[1], background='SlateGray1')
+        self.sky = Canvas(self.frame,
+                          width=self.windowManager.getResolution()[0],
+                          height=self.windowManager.getResolution()[1],
+                          background='SlateGray1')
         self.sky.pack()
 
         starting_point = (50, self.windowManager.getResolution()[1]/2)
@@ -445,7 +493,11 @@ class Game:
         self.bindKeys()
 
     def saveGameToFile(self):
-        data = {"player": self.player.getCenter(), "ENEMIES": [e.getCenter() for e in EnemyManager.ENEMIES], "hp": HealthTracker.hp, "score": ScoreTracker.score, "ammo": self.player.AMMO_TRACKER.current_ammo}
+        data = {"player": self.player.getCenter(),
+                "ENEMIES": [e.getCenter() for e in EnemyManager.ENEMIES],
+                "hp": HealthTracker.hp,
+                "score": ScoreTracker.score,
+                "ammo": self.player.ammo_tracker.current_ammo}
         with open("save.json", 'w') as save_file:
             save_file.write(dumps(data))
 
@@ -456,7 +508,7 @@ class Game:
         self.sky.coords(self.player.ID, xy[0], xy[1], xy[2], xy[3])
         HealthTracker.hp = data['hp']
         ScoreTracker.score = data['score']
-        self.player.AMMO_TRACKER.current_ammo = data['ammo']
+        self.player.ammo_tracker.current_ammo = data['ammo']
         for e_coords in data['ENEMIES']:
             e = Enemy(self.sky)
             xy = createCoordsFromCenter(e_coords, e.SIZE)
@@ -464,9 +516,10 @@ class Game:
             EnemyManager.ENEMIES.append(e)
 
     def loop(self):
-        while HealthTracker.hp > 0 and not (self.SAVE_AND_MENU or self.SAVE_AND_BOSSKEY):
+        need_to_save = self.SAVE_AND_MENU or self.SAVE_AND_BOSSKEY
+        while HealthTracker.hp > 0 and not need_to_save:
             frame_start_time = time()
-            self.player.AMMO_TRACKER.tryToReload()
+            self.player.ammo_tracker.tryToReload()
             ProjectileManager.manage()
             EnemyManager.manage()
             self.ui.update()
@@ -490,7 +543,8 @@ class Game:
             if isfile("save.json"):
                 remove("save.json")
             leaderboard_file = open('leaderboard.txt', 'a')
-            score_string = "%s:%d\n" % (self.windowManager.player_name, ScoreTracker.score)
+            score_string = "%s:%d\n" % (self.windowManager.player_name,
+                                        ScoreTracker.score)
             leaderboard_file.write(score_string)
             leaderboard_file.close()
             self.windowManager.gameOver()

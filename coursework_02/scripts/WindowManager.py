@@ -10,7 +10,7 @@ from json import load
 class WindowManager():
     def __init__(self, window, resolution):
         self.player_name = "ANON"
-        self.window= window
+        self.window = window
         self.resolution = resolution
         self.boss_image = PhotoImage(file='assets/bosskey.gif')
         self.menu_image = PhotoImage(file='assets/newbackground.gif')
@@ -43,11 +43,11 @@ class WindowManager():
 
     def game(self):
         self.game_frame = self.createCleanFrame()
-        game = Game(self.game_frame, self)
+        Game(self.game_frame, self)
 
     def loadSavedGame(self):
         self.game_frame = self.createCleanFrame()
-        game = Game(self.game_frame, self, True)
+        Game(self.game_frame, self, True)
 
     def menu(self):
         new_frame = self.createCleanFrame()
@@ -55,15 +55,15 @@ class WindowManager():
 
     def leaderboard(self):
         new_frame = self.createCleanFrame()
-        leaderboard = LeaderBoard(new_frame, self)
+        LeaderBoard(new_frame, self)
 
     def options(self):
         new_frame = self.createCleanFrame()
-        options = Options(new_frame, self)
+        Options(new_frame, self)
 
     def openBossKeyInGame(self):
         new_frame = self.createCleanFrame()
-        boss_key = BossKey(new_frame, self, True)
+        BossKey(new_frame, self, True)
 
     def createHiddenBossKey(self):
         hidden_frame = BossKey(Frame(self.window), self)
