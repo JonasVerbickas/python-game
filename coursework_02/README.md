@@ -23,3 +23,5 @@ Hold off enemies for as long as you can!
 ## Assets
 
 - Main menu background is made by *asimuz* from [itch.io](ansimuz.itch.io/hazy-urban-landscape?download)
+
+- Zombie sprite is made by *ChessMasterRiley* from [opengameart.org](https://opengameart.org/content/animated-top-down-zombie)
