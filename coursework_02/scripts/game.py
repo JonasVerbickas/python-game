@@ -65,7 +65,7 @@ class Pause():
                 Pause.window.update()
             Pause.window.mainloop()
         except Exception as e:
-            print("PROBABLY FINE?: ", e)
+            pass
 
 
 def outOfBounds(obj, bounds):
@@ -276,6 +276,20 @@ class AmmoTracker():
                 self.current_ammo += 1
                 self.reload_started_at = time()
 
+    def shakeCamera(self):
+        for child in self.master.canvas.find_all():
+            self.master.canvas.move(child, 1, 0)
+            self.master.canvas.master.update()
+        self.master.canvas.master.after(1)
+        for child in self.master.canvas.find_all():
+            self.master.canvas.move(child, -2, 0)
+            self.master.canvas.master.update()
+        self.master.canvas.master.after(1)
+        for child in self.master.canvas.find_all():
+            self.master.canvas.move(child, 1, 0)
+            self.master.canvas.master.update()
+
+
     def shoot(self, event):
         if self.current_ammo > 0:
             self.reload_started_at = time()
@@ -284,6 +298,7 @@ class AmmoTracker():
             goal = [event.x,
                     event.y]
             ProjectileManager.createProjectile(starting_pos, goal_xy=goal)
+            self.shakeCamera()
 
 
 class HealthTracker:
