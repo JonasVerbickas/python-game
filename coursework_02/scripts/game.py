@@ -164,7 +164,7 @@ class Reticle(Shape):
             starting_xy = [player_coords[0], player_coords[1]]
             end_xy = [player_coords[i]+dist_vec[i] for i in range(2)]
             new_xy = starting_xy + end_xy
-            self.canvas.coords(self.ID, new_xy)
+            self.canvas.coords(self.ID, new_xy[0], new_xy[1], new_xy[2], new_xy[3])
 
     def create(self, starting_object):
         self.master = starting_object
@@ -256,7 +256,7 @@ class EnemyManager():
         if time()-EnemyManager.last_spawn > EnemyManager.SPAWN_INTERVAL:
             w = EnemyManager.windowManager.getResolution()[0]
             h = EnemyManager.windowManager.getResolution()[1]
-            e = Enemy(EnemyManager.canvas, "zombie.png")
+            e = Enemy(EnemyManager.canvas, "zombie.gif")
             xy = createCoordsFromCenter([w+e.getSize()[0], 
                                         randint(0, h-e.getSize()[1])],
                                         e.SIZE)
@@ -541,7 +541,7 @@ class Game:
         ScoreTracker.score = data['score']
         self.player.ammo_tracker.current_ammo = data['ammo']
         for e_coords in data['enemies']:
-            e = Enemy(self.canvas, "zombie.png")
+            e = Enemy(self.canvas, "zombie.gif")
             xy = createCoordsFromCenter(e_coords, e.SIZE)
             e.create(xy)
             EnemyManager.enemies.append(e)
