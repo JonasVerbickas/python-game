@@ -147,33 +147,6 @@ class Sprite:
         return (self.img.width(), self.img.height())
 
 
-class Reticle(Shape):
-    SIZE = 50
-    master = 0
-    last_aimed_at = [SIZE, 0]
-
-    def aim(self, event=None):
-        if event is not None:
-            dist_vec = self.master.distanceToAPoint([event.x, event.y])
-            self.last_aimed_at = [event.x, event.y]
-        else:
-            dist_vec = self.master.distanceToAPoint(self.last_aimed_at)
-        dist_vec = shortenVector(dist_vec, self.SIZE)
-        if dist_vec[0] > 0:
-            player_coords = self.master.getCenter()
-            starting_xy = [player_coords[0], player_coords[1]]
-            end_xy = [player_coords[i]+dist_vec[i] for i in range(2)]
-            new_xy = starting_xy + end_xy
-            self.canvas.coords(self.ID, new_xy[0], new_xy[1], new_xy[2], new_xy[3])
-
-    def create(self, starting_object):
-        self.master = starting_object
-        starting_xy = self.master.getCenter()
-        xy = (starting_xy[0], starting_xy[1],
-              starting_xy[0]+self.SIZE, starting_xy[1])
-        self.ID = self.canvas.create_line(xy, fill='red')
-
-
 class Projectile(Shape):
     SPEED = 26
     SIZE = 14
@@ -321,31 +294,27 @@ class AmmoTracker():
             self.reload_started_at = time()
             self.current_ammo -= 1
             starting_pos = self.master.getCenter()
-            goal = [self.master.reticle.getXY()[2],
-                    self.master.reticle.getXY()[3]]
+            goal = [event.x,
+                    event.y]
             ProjectileManager.createProjectile(starting_pos, goal_xy=goal)
 
 
-class Player(Shape):
+class Player(Sprite):
     SIZE = 45
     SPEED = 10
 
     def up(self):
         if self.getXY()[1] > self.SIZE:
             self.canvas.move(self.ID, 0, -self.SPEED)
-            self.reticle.aim()  # refresh aim
 
     def down(self):
         h = self.canvas.winfo_height()
         if self.getXY()[1] < h-self.SIZE*2:
             self.canvas.move(self.ID, 0, self.SPEED)
-            self.reticle.aim()
 
     def create(self, starting_pont):
         xy = createCoordsFromCenter(starting_pont, self.SIZE)
-        self.ID = self.canvas.create_oval(xy, fill="tomato")
-        self.reticle = Reticle(self.canvas)
-        self.reticle.create(self)
+        self.ID = self.canvas.create_image(xy[0], xy[1], image=self.img, anchor="center")
         self.ammo_tracker = AmmoTracker(self)
 
 
@@ -405,7 +374,6 @@ class Game:
         window = self.frame.master
         window.bind("<Escape>", self.pause)
         window.bind("<ButtonRelease-1>", self.player.ammo_tracker.shoot)
-        window.bind("<Motion>", self.player.reticle.aim)
         window.bind("<Key>", self.recordInput)
         window.bind("<space>", self.tenet)
         # we unbind and use <key> instead
@@ -509,9 +477,10 @@ class Game:
                           height=self.windowManager.getResolution()[1],
                           background='SlateGray1')
         self.canvas.pack()
-
-        starting_point = (50, self.windowManager.getResolution()[1]/2)
-        self.player = Player(self.canvas)
+        
+        self.player = Player(self.canvas, "player.png")
+        starting_point = (self.player.SIZE,
+                          self.windowManager.getResolution()[1]/2)
         self.player.create(starting_point)
 
         self.createGlobalStatTrackers()
@@ -533,10 +502,6 @@ class Game:
             data = load(save_file)
         xy = createCoordsFromCenter(data['player'], self.player.SIZE)
         self.canvas.coords(self.player.ID, xy[0], xy[1], xy[2], xy[3])
-        # should move the old reticle instead of creating a new one
-        # need to improve later
-        self.canvas.delete(self.player.reticle.ID)
-        self.player.reticle.create(self.player)
         HealthTracker.hp = data['hp']
         ScoreTracker.score = data['score']
         self.player.ammo_tracker.current_ammo = data['ammo']
