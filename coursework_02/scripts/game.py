@@ -516,8 +516,9 @@ class Game:
             EnemyManager.ENEMIES.append(e)
 
     def loop(self):
-        need_to_save = self.SAVE_AND_MENU or self.SAVE_AND_BOSSKEY
+        need_to_save = False
         while HealthTracker.hp > 0 and not need_to_save:
+            print(need_to_save)
             frame_start_time = time()
             self.player.ammo_tracker.tryToReload()
             ProjectileManager.manage()
@@ -531,6 +532,7 @@ class Game:
             if delay < 0:
                 delay = 0
             self.frame.after(delay)
+            need_to_save = self.SAVE_AND_MENU or self.SAVE_AND_BOSSKEY
 
         self.unbindKeys()
         if self.SAVE_AND_MENU:
