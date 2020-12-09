@@ -148,7 +148,7 @@ class Sprite:
 
 
 class Projectile(Shape):
-    SPEED = 26
+    SPEED = 32
     SIZE = 14
     vector = []
 
@@ -163,7 +163,7 @@ class Projectile(Shape):
         if TENET:
             self.vector = [-self.vector[0], -self.vector[1]]
         xy = createCoordsFromCenter(starting_xy, self.SIZE)
-        self.ID = self.canvas.create_rectangle(xy, fill='DarkGoldenRod2', outline='brown4')
+        self.ID = self.canvas.create_rectangle(xy, fill='DarkGoldenRod2', outline='red2')
 
 
 class Enemy(Sprite):

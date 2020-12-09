@@ -24,4 +24,6 @@ Hold off enemies for as long as you can!
 
 - Main menu background is made by *asimuz* from [itch.io](ansimuz.itch.io/hazy-urban-landscape?download)
 
-- Zombie sprite is made by *ChessMasterRiley* from [opengameart.org](https://opengameart.org/content/animated-top-down-zombie)
+- Zombie sprite is made by *ChessMasterRiley* from [OpenGameArt.org](https://opengameart.org/content/animated-top-down-zombie)
+
+- Player sprite is also made by *ChessMasterRiley* from [OpenGameArt.org](https://opengameart.org/content/animated-top-down-survivor-player)
