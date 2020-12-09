@@ -190,7 +190,7 @@ class Projectile(Shape):
         if TENET:
             self.vector = [-self.vector[0], -self.vector[1]]
         xy = createCoordsFromCenter(starting_xy, self.SIZE)
-        self.ID = self.canvas.create_rectangle(xy, fill='black', outline='red')
+        self.ID = self.canvas.create_rectangle(xy, fill='DarkGoldenRod2', outline='brown4')
 
 
 class Enemy(Sprite):
@@ -541,7 +541,7 @@ class Game:
         ScoreTracker.score = data['score']
         self.player.ammo_tracker.current_ammo = data['ammo']
         for e_coords in data['enemies']:
-            e = Enemy(self.canvas)
+            e = Enemy(self.canvas, "zombie.png")
             xy = createCoordsFromCenter(e_coords, e.SIZE)
             e.create(xy)
             EnemyManager.enemies.append(e)
