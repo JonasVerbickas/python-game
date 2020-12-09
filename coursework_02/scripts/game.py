@@ -1,4 +1,4 @@
-from tkinter import Frame, Canvas, Button, Toplevel
+from tkinter import Frame, Canvas, Button, Toplevel, PhotoImage
 from math import sqrt
 from random import randint
 from time import time
@@ -26,18 +26,18 @@ def createCoordsFromCenter(xy, size):
 
 
 class Pause():
-    PAUSE_WINDOW = 0
+    window = 0
 
     def resume(self):
         self.game.bindKeys()
-        Pause.PAUSE_WINDOW.quit()
-        Pause.PAUSE_WINDOW.destroy()
-        Pause.PAUSE_WINDOW = 0
+        Pause.window.quit()
+        Pause.window.destroy()
+        Pause.window = 0
 
     def quit(self):
-        Pause.PAUSE_WINDOW.quit()
-        Pause.PAUSE_WINDOW.destroy()
-        Pause.PAUSE_WINDOW = 0
+        Pause.window.quit()
+        Pause.window.destroy()
+        Pause.window = 0
         # we quit after the while loop cleanly
         # without deleting any needed variables
         self.game.saveAndMenu()
@@ -45,32 +45,31 @@ class Pause():
     def __init__(self, event, game):
         self.game = game
         self.game.unbindKeys()
-        if Pause.PAUSE_WINDOW == 0:  # not paused
-            Pause.PAUSE_WINDOW = Toplevel(self.game.windowManager.window)
-            Pause.PAUSE_WINDOW.overrideredirect(True)  # removes borders
-            canvas = Canvas(Pause.PAUSE_WINDOW, bg='white')
-            canvas.pack()
-            canvas.create_text(100, 32, text="PAUSED", font=("Arial", 32))
-            resume_button = Button(canvas, text='Resume',
-                                   command=self.resume,
-                                   padx=15, pady=8, bg='white')
-            resume_button.place(relx=0.5, rely=0.5, anchor="center")
-            quit_button = Button(canvas, text='Save and Quit',
-                                 command=self.quit,
-                                 padx=15, pady=8, bg='white')
-            quit_button.place(relx=0.5, rely=0.75, anchor="center")
-            # updates the pause window if it isn't destroyed
-            try:
-                while Pause.PAUSE_WINDOW != 0:
-                    x_offset = self.game.windowManager.window.winfo_rootx()+535
-                    y_offset = self.game.windowManager.window.winfo_rooty()+230
-                    geometry_string = ("200x200+%d+%d") % (x_offset, y_offset)
-                    Pause.PAUSE_WINDOW.geometry(geometry_string)
-                    Pause.PAUSE_WINDOW.lift()
-                    Pause.PAUSE_WINDOW.update()
-                Pause.PAUSE_WINDOW.mainloop()
-            except Exception as e:
-                print("PROBABLY FINE?: ", e)
+        Pause.window = Toplevel(self.game.windowManager.window)
+        Pause.window.overrideredirect(True)  # removes borders
+        canvas = Canvas(Pause.window, bg='white')
+        canvas.pack()
+        canvas.create_text(100, 32, text="PAUSED", font=("Arial", 32))
+        resume_button = Button(canvas, text='Resume',
+                               command=self.resume,
+                               padx=15, pady=8, bg='white')
+        resume_button.place(relx=0.5, rely=0.5, anchor="center")
+        quit_button = Button(canvas, text='Save and Quit',
+                             command=self.quit,
+                             padx=15, pady=8, bg='white')
+        quit_button.place(relx=0.5, rely=0.75, anchor="center")
+        # updates the pause window if it isn't destroyed
+        try:
+            while Pause.window != 0:
+                x_offset = self.game.windowManager.window.winfo_rootx()+535
+                y_offset = self.game.windowManager.window.winfo_rooty()+230
+                geometry_string = ("200x200+%d+%d") % (x_offset, y_offset)
+                Pause.window.geometry(geometry_string)
+                Pause.window.lift()
+                Pause.window.update()
+            Pause.window.mainloop()
+        except Exception as e:
+            print("PROBABLY FINE?: ", e)
 
 
 def outOfBounds(obj, bounds):
@@ -100,12 +99,11 @@ def shortenVector(vector, max_size):
     return [(i*max_size)/(sqrt(vector[0]**2 + vector[1]**2)) for i in vector]
 
 
-class Object:
-    CANVAS = 0
+class Shape:
     ID = 0
 
     def __init__(self, canvas):
-        self.CANVAS = canvas
+        self.canvas = canvas
 
     def distanceToAPoint(self, point):
         center_coords = self.getCenter()
@@ -120,10 +118,10 @@ class Object:
         return output
 
     def getXY(self):  # return dimensions of an object
-        return self.CANVAS.coords(self.ID)
+        return self.canvas.coords(self.ID)
 
 
-class Reticle(Object):
+class Reticle(Shape):
     SIZE = 50
     master = 0
     last_aimed_at = [SIZE, 0]
@@ -140,19 +138,20 @@ class Reticle(Object):
             starting_xy = [player_coords[0], player_coords[1]]
             end_xy = [player_coords[i]+dist_vec[i] for i in range(2)]
             new_xy = starting_xy + end_xy
-            self.CANVAS.coords(self.ID, new_xy)
+            self.canvas.coords(self.ID, new_xy)
 
     def create(self, starting_object):
         self.master = starting_object
-        center = starting_object.getCenter()
-        xy = (center[0], center[1], center[0]+self.SIZE, center[1])
-        self.ID = self.CANVAS.create_line(xy, fill='red')
+        starting_xy = self.master.getCenter()
+        xy = (starting_xy[0], starting_xy[1],
+              starting_xy[0]+self.SIZE, starting_xy[1])
+        self.ID = self.canvas.create_line(xy, fill='red')
 
 
-class Projectile(Object):
+class Projectile(Shape):
     SPEED = 26
     SIZE = 14
-    VECTOR = []
+    vector = []
 
     def goal2AdjustedtedVector(self, starting_xy, goal_xy):
         dist = calcDistanceVector(starting_xy, goal_xy)
@@ -160,15 +159,15 @@ class Projectile(Object):
         return vector
 
     def create(self, starting_xy, goal_xy):
-        self.VECTOR = self.goal2AdjustedtedVector(starting_xy, goal_xy)
+        self.vector = self.goal2AdjustedtedVector(starting_xy, goal_xy)
         global TENET
         if TENET:
-            self.VECTOR = [-self.VECTOR[0], -self.VECTOR[1]]
+            self.vector = [-self.vector[0], -self.vector[1]]
         xy = createCoordsFromCenter(starting_xy, self.SIZE)
-        self.ID = self.CANVAS.create_rectangle(xy, fill='black', outline='red')
+        self.ID = self.canvas.create_rectangle(xy, fill='black', outline='red')
 
 
-class Enemy(Object):
+class Enemy(Shape):
     WORTH = 10
     SIZE = 55
     SPEED = 8
@@ -176,43 +175,43 @@ class Enemy(Object):
     MULT = 1.02  # 20 to reach max
 
     def create(self, xy):
-        self.ID = self.CANVAS.create_oval(xy, fill='dark green')
+        self.ID = self.canvas.create_oval(xy, fill='dark green')
         if Enemy.SPEED < Enemy.MAX_SPEED:
             Enemy.SPEED *= Enemy.MULT
 
 
 class ProjectileManager():
-    CANVAS = 0
-    PROJECTILES = []
+    canvas = 0
+    projectiles = []
 
     def __init__(self, canvas, windowManager):
-        ProjectileManager.CANVAS = canvas
-        ProjectileManager.PROJECTILES = []
+        ProjectileManager.canvas = canvas
+        ProjectileManager.projectiles = []
         ProjectileManager.windowManager = windowManager
 
     @staticmethod
     def createProjectile(starting_xy, goal_xy):
-        p = Projectile(ProjectileManager.CANVAS)
+        p = Projectile(ProjectileManager.canvas)
         p.create(starting_xy, goal_xy)
-        ProjectileManager.PROJECTILES.append(p)
+        ProjectileManager.projectiles.append(p)
 
     @staticmethod
     def killProjectile(e):
-        ProjectileManager.CANVAS.delete(e.ID)
-        ProjectileManager.PROJECTILES.remove(e)
+        ProjectileManager.canvas.delete(e.ID)
+        ProjectileManager.projectiles.remove(e)
 
     @staticmethod
     def moveAllProjectiles():
-        for p in list(ProjectileManager.PROJECTILES):
+        for p in list(ProjectileManager.projectiles):
             if outOfBounds(p, ProjectileManager.windowManager.getResolution()):
-                ProjectileManager.CANVAS.delete(p.ID)
-                ProjectileManager.PROJECTILES.remove(p)
+                ProjectileManager.canvas.delete(p.ID)
+                ProjectileManager.projectiles.remove(p)
                 continue
             global TENET
             if TENET:
-                ProjectileManager.CANVAS.move(p.ID, -p.VECTOR[0], -p.VECTOR[1])
+                ProjectileManager.canvas.move(p.ID, -p.vector[0], -p.vector[1])
             else:
-                ProjectileManager.CANVAS.move(p.ID, p.VECTOR[0], p.VECTOR[1])
+                ProjectileManager.canvas.move(p.ID, p.vector[0], p.vector[1])
 
     @staticmethod
     def manage():
@@ -222,32 +221,32 @@ class ProjectileManager():
 class EnemyManager():
     def __init__(self, canvas, windowManager):
         EnemyManager.SPAWN_INTERVAL = 2  # seconds
-        EnemyManager.CANVAS = canvas
-        EnemyManager.LAST_SPAWN = time()
-        EnemyManager.ENEMIES = []
+        EnemyManager.canvas = canvas
+        EnemyManager.last_spawn = time()
+        EnemyManager.enemies = []
         EnemyManager.windowManager = windowManager
 
     @staticmethod
     def spawnEnemy(coords=[]):
-        if time()-EnemyManager.LAST_SPAWN > EnemyManager.SPAWN_INTERVAL:
+        if time()-EnemyManager.last_spawn > EnemyManager.SPAWN_INTERVAL:
             w = EnemyManager.windowManager.getResolution()[0]
             h = EnemyManager.windowManager.getResolution()[1]
-            e = Enemy(EnemyManager.CANVAS)
+            e = Enemy(EnemyManager.canvas)
             xy = createCoordsFromCenter([w, randint(0, h-e.SIZE)], e.SIZE)
             e.create(xy)
-            EnemyManager.ENEMIES.append(e)
-            EnemyManager.LAST_SPAWN = time()
+            EnemyManager.enemies.append(e)
+            EnemyManager.last_spawn = time()
             if EnemyManager.SPAWN_INTERVAL > FASTEST_SPAWNING:
                 EnemyManager.SPAWN_INTERVAL *= 0.98
 
     @staticmethod
     def killEnemy(e):
-        EnemyManager.CANVAS.delete(e.ID)
-        EnemyManager.ENEMIES.remove(e)
+        EnemyManager.canvas.delete(e.ID)
+        EnemyManager.enemies.remove(e)
 
     @staticmethod
     def moveEnemies():
-        for e in list(EnemyManager.ENEMIES):
+        for e in list(EnemyManager.enemies):
             bounds = list(EnemyManager.windowManager.getResolution())
             bounds[0] += e.SIZE*2  # bounds depend on the enemy
             if outOfBounds(e, bounds):
@@ -256,7 +255,7 @@ class EnemyManager():
                 HealthTracker.hp -= 1
                 EnemyManager.killEnemy(e)
             else:
-                for p in list(ProjectileManager.PROJECTILES):
+                for p in list(ProjectileManager.projectiles):
                     if collision(p, e):
                         ScoreTracker.score += e.WORTH
                         EnemyManager.killEnemy(e)
@@ -265,9 +264,9 @@ class EnemyManager():
                 else:
                     global TENET
                     if TENET:
-                        EnemyManager.CANVAS.move(e.ID, e.SPEED, 0)
+                        EnemyManager.canvas.move(e.ID, e.SPEED, 0)
                     else:
-                        EnemyManager.CANVAS.move(e.ID, -e.SPEED, 0)
+                        EnemyManager.canvas.move(e.ID, -e.SPEED, 0)
 
     @staticmethod
     def manage():
@@ -277,10 +276,10 @@ class EnemyManager():
 
 class AmmoTracker():
     SEC_TO_RELOAD = 0.4
-    OBJ = 0  # id of the object whose ammo we are tracking
+    master = 0  # id of the object whose ammo we are tracking
 
     def __init__(self, obj):
-        self.OBJ = obj
+        self.master = master
         self.reload_started_at = time()
         self.current_ammo = MAX_AMMO
 
@@ -294,31 +293,32 @@ class AmmoTracker():
         if self.current_ammo > 0:
             self.reload_started_at = time()
             self.current_ammo -= 1
-            starting_pos = self.OBJ.getCenter()
-            goal = [self.OBJ.RETICLE.getXY()[2], self.OBJ.RETICLE.getXY()[3]]
+            starting_pos = self.master.getCenter()
+            goal = [self.master.reticle.getXY()[2],
+                    self.master.reticle.getXY()[3]]
             ProjectileManager.createProjectile(starting_pos, goal_xy=goal)
 
 
-class Player(Object):
+class Player(Shape):
     SIZE = 45
     SPEED = 10
 
     def up(self):
         if self.getXY()[1] > self.SIZE:
-            self.CANVAS.move(self.ID, 0, -self.SPEED)
-            self.RETICLE.aim()  # refresh aim
+            self.canvas.move(self.ID, 0, -self.SPEED)
+            self.reticle.aim()  # refresh aim
 
     def down(self):
-        h = self.CANVAS.winfo_height()
+        h = self.canvas.winfo_height()
         if self.getXY()[1] < h-self.SIZE*2:
-            self.CANVAS.move(self.ID, 0, self.SPEED)
-            self.RETICLE.aim()
+            self.canvas.move(self.ID, 0, self.SPEED)
+            self.reticle.aim()
 
     def create(self, starting_pont):
         xy = createCoordsFromCenter(starting_pont, self.SIZE)
-        self.ID = self.CANVAS.create_oval(xy, fill="tomato")
-        self.RETICLE = Reticle(self.CANVAS)
-        self.RETICLE.create(self)
+        self.ID = self.canvas.create_oval(xy, fill="tomato")
+        self.reticle = Reticle(self.canvas)
+        self.reticle.create(self)
         self.ammo_tracker = AmmoTracker(self)
 
 
@@ -378,7 +378,7 @@ class Game:
         window = self.frame.master
         window.bind("<Escape>", self.pause)
         window.bind("<ButtonRelease-1>", self.player.ammo_tracker.shoot)
-        window.bind("<Motion>", self.player.RETICLE.aim)
+        window.bind("<Motion>", self.player.reticle.aim)
         window.bind("<Key>", self.recordInput)
         window.bind("<space>", self.tenet)
         # we unbind and use <key> instead
@@ -397,10 +397,10 @@ class Game:
     def createGlobalStatTrackers(self):
         global TENET_ACTIVATABLE
         TENET_ACTIVATABLE = False
-        ProjectileManager(self.sky, self.windowManager)
+        ProjectileManager(self.canvas, self.windowManager)
         HealthTracker()
         ScoreTracker()
-        EnemyManager(self.sky, self.windowManager)
+        EnemyManager(self.canvas, self.windowManager)
 
     def pause(self, event):
         Pause(event, self)
@@ -417,9 +417,9 @@ class Game:
             global TENET
             TENET = not TENET
             if TENET:
-                self.sky.configure(bg='salmon1')
+                self.canvas.configure(bg='salmon1')
             else:
-                self.sky.configure(bg='SlateGray1')
+                self.canvas.configure(bg='SlateGray1')
 
     def cheatLife(self):
         HealthTracker.hp = 100
@@ -477,24 +477,24 @@ class Game:
                                                       event)
 
     def initialAssetLoad(self):
-        self.sky = Canvas(self.frame,
+        self.canvas = Canvas(self.frame,
                           width=self.windowManager.getResolution()[0],
                           height=self.windowManager.getResolution()[1],
                           background='SlateGray1')
-        self.sky.pack()
+        self.canvas.pack()
 
         starting_point = (50, self.windowManager.getResolution()[1]/2)
-        self.player = Player(self.sky)
+        self.player = Player(self.canvas)
         self.player.create(starting_point)
 
         self.createGlobalStatTrackers()
-        self.ui = UI(self.sky, self.player)
+        self.ui = UI(self.canvas, self.player)
 
         self.bindKeys()
 
     def saveGameToFile(self):
         data = {"player": self.player.getCenter(),
-                "ENEMIES": [e.getCenter() for e in EnemyManager.ENEMIES],
+                "enemies": [e.getCenter() for e in EnemyManager.enemies],
                 "hp": HealthTracker.hp,
                 "score": ScoreTracker.score,
                 "ammo": self.player.ammo_tracker.current_ammo}
@@ -505,15 +505,19 @@ class Game:
         with open("save.json", 'r') as save_file:
             data = load(save_file)
         xy = createCoordsFromCenter(data['player'], self.player.SIZE)
-        self.sky.coords(self.player.ID, xy[0], xy[1], xy[2], xy[3])
+        self.canvas.coords(self.player.ID, xy[0], xy[1], xy[2], xy[3])
+        # should move the old reticle instead of creating a new one
+        # need to improve later
+        self.canvas.delete(self.player.reticle.ID)
+        self.player.reticle.create(self.player)
         HealthTracker.hp = data['hp']
         ScoreTracker.score = data['score']
         self.player.ammo_tracker.current_ammo = data['ammo']
-        for e_coords in data['ENEMIES']:
-            e = Enemy(self.sky)
+        for e_coords in data['enemies']:
+            e = Enemy(self.canvas)
             xy = createCoordsFromCenter(e_coords, e.SIZE)
             e.create(xy)
-            EnemyManager.ENEMIES.append(e)
+            EnemyManager.enemies.append(e)
 
     def loop(self):
         need_to_save = False
