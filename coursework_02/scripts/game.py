@@ -21,10 +21,6 @@ def calcDistanceVector(point1, point2):
     return (point2[0] - point1[0], point2[1] - point1[1])
 
 
-def createCoordsFromCenter(xy, size):
-    return [xy[0]-size/2, xy[1]+size/2, xy[0]+size/2, xy[1]-size/2]
-
-
 class Pause():
     window = 0
 
@@ -76,17 +72,17 @@ def outOfBounds(obj, bounds):
     mult = 2
     bounds = [mult*b for b in bounds]
     # horizontal
-    if obj.getCenter()[0] > bounds[0] or obj.getCenter()[0] < -bounds[0]:
+    if obj.getXY()[0] > bounds[0] or obj.getXY()[0] < -bounds[0]:
         return True
-    elif obj.getCenter()[1] < -bounds[1] or obj.getCenter()[1] > bounds[1]:
+    elif obj.getXY()[1] < -bounds[1] or obj.getXY()[1] > bounds[1]:
         return True
     else:
         return False
 
 
 def collision(obj1, obj2):
-    coords1 = obj1.getCenter()
-    coords2 = obj2.getCenter()
+    coords1 = obj1.getXY()
+    coords2 = obj2.getXY()
     dist_vec = calcDistanceVector(coords1, coords2)
     dist = sqrt(dist_vec[0]**2+dist_vec[1]**2)
     if dist < obj1.SIZE/2 + obj2.SIZE/2:
@@ -99,46 +95,23 @@ def shortenVector(vector, max_size):
     return [(i*max_size)/(sqrt(vector[0]**2 + vector[1]**2)) for i in vector]
 
 
-class Shape:
-    ID = 0
-
-    def __init__(self, canvas):
-        self.canvas = canvas
-
-    def distanceToAPoint(self, point):
-        center_coords = self.getCenter()
-        dist = calcDistanceVector(center_coords, point)
-        return dist
-
-    def getCenter(self):
-        coords = self.getXY()
-        x_mid = (coords[2] - coords[0])/2 + coords[0]
-        y_mid = (coords[3] - coords[1])/2 + coords[1]
-        output = [x_mid, y_mid]
-        return output
-
-    def getXY(self):  # return dimensions of an object
-        return self.canvas.coords(self.ID)
-
-
 class Sprite:
     ID = 0
     SIZE = 0
 
-    def __init__(self, canvas, sprite_file):
+    def __init__(self, canvas, sprite_file, coords):
         self.canvas = canvas
         sprite_location = "assets/" + sprite_file
         self.img = PhotoImage(file=sprite_location)
+        self.ID = self.canvas.create_image(coords[0], coords[1],
+                                           image=self.img)
         # radius/hitbox
         self.SIZE = sqrt((self.getSize()[0]/2)**2 + (self.getSize()[1]/2)**2)
 
     def distanceToAPoint(self, point):
-        center_coords = self.getCenter()
+        center_coords = self.getXY()
         dist = calcDistanceVector(center_coords, point)
         return dist
-
-    def getCenter(self):
-        return self.getXY()
 
     def getXY(self):  # return dimensions of an object
         return self.canvas.coords(self.ID)
@@ -147,7 +120,7 @@ class Sprite:
         return (self.img.width(), self.img.height())
 
 
-class Projectile(Shape):
+class Projectile(Sprite):
     SPEED = 32
     SIZE = 14
     vector = []
@@ -157,13 +130,12 @@ class Projectile(Shape):
         vector = shortenVector(dist, self.SPEED)
         return vector
 
-    def create(self, starting_xy, goal_xy):
+    def __init__(self, canvas, starting_xy, goal_xy):
+        super().__init__(canvas, "bullet.gif", starting_xy)
         self.vector = self.goal2AdjustedtedVector(starting_xy, goal_xy)
         global TENET
         if TENET:
-            self.vector = [-self.vector[0], -self.vector[1]]
-        xy = createCoordsFromCenter(starting_xy, self.SIZE)
-        self.ID = self.canvas.create_rectangle(xy, fill='DarkGoldenRod2', outline='red2')
+            self.vector = [-self.vector[0], -self.vector[1]]        
 
 
 class Enemy(Sprite):
@@ -172,11 +144,30 @@ class Enemy(Sprite):
     MAX_SPEED = 12
     MULT = 1.02  # 20 to reach max
 
-    def create(self, xy):
-        self.ID = self.canvas.create_image(xy[0], xy[1], image=self.img, anchor="center")
+    def __init__(self, canvas, coords):
+        super().__init__(canvas, "zombie.gif", coords)
         if Enemy.SPEED < Enemy.MAX_SPEED:
             Enemy.SPEED *= Enemy.MULT
 
+
+class Player(Sprite):
+    SIZE = 45
+    SPEED = 10
+
+    def __init__(self, canvas, coords):
+        super().__init__(canvas, "player.gif", coords)
+        self.ammo_tracker = AmmoTracker(self)
+
+
+    def up(self):
+        if self.getXY()[1] > self.SIZE:
+            self.canvas.move(self.ID, 0, -self.SPEED)
+
+    def down(self):
+        h = self.canvas.winfo_height()
+        if self.getXY()[1] < h-self.SIZE*2:
+            self.canvas.move(self.ID, 0, self.SPEED)
+        
 
 class ProjectileManager():
     canvas = 0
@@ -189,8 +180,7 @@ class ProjectileManager():
 
     @staticmethod
     def createProjectile(starting_xy, goal_xy):
-        p = Projectile(ProjectileManager.canvas)
-        p.create(starting_xy, goal_xy)
+        p = Projectile(ProjectileManager.canvas, starting_xy, goal_xy)
         ProjectileManager.projectiles.append(p)
 
     @staticmethod
@@ -229,11 +219,8 @@ class EnemyManager():
         if time()-EnemyManager.last_spawn > EnemyManager.SPAWN_INTERVAL:
             w = EnemyManager.windowManager.getResolution()[0]
             h = EnemyManager.windowManager.getResolution()[1]
-            e = Enemy(EnemyManager.canvas, "zombie.gif")
-            xy = createCoordsFromCenter([w+e.getSize()[0], 
-                                        randint(0, h-e.getSize()[1])],
-                                        e.SIZE)
-            e.create(xy)
+            xy = [w, randint(0, h)]
+            e = Enemy(EnemyManager.canvas, xy)
             EnemyManager.enemies.append(e)
             EnemyManager.last_spawn = time()
             if EnemyManager.SPAWN_INTERVAL > FASTEST_SPAWNING:
@@ -293,29 +280,10 @@ class AmmoTracker():
         if self.current_ammo > 0:
             self.reload_started_at = time()
             self.current_ammo -= 1
-            starting_pos = self.master.getCenter()
+            starting_pos = self.master.getXY()
             goal = [event.x,
                     event.y]
             ProjectileManager.createProjectile(starting_pos, goal_xy=goal)
-
-
-class Player(Sprite):
-    SIZE = 45
-    SPEED = 10
-
-    def up(self):
-        if self.getXY()[1] > self.SIZE:
-            self.canvas.move(self.ID, 0, -self.SPEED)
-
-    def down(self):
-        h = self.canvas.winfo_height()
-        if self.getXY()[1] < h-self.SIZE*2:
-            self.canvas.move(self.ID, 0, self.SPEED)
-
-    def create(self, starting_pont):
-        xy = createCoordsFromCenter(starting_pont, self.SIZE)
-        self.ID = self.canvas.create_image(xy[0], xy[1], image=self.img, anchor="center")
-        self.ammo_tracker = AmmoTracker(self)
 
 
 class HealthTracker:
@@ -424,12 +392,12 @@ class Game:
         # top and bottom
         y = resolution[1]
         for x in range(0, resolution[0], Projectile.SIZE):
-            ProjectileManager.createProjectile(self.player.getCenter(), [x, 0])
-            ProjectileManager.createProjectile(self.player.getCenter(), [x, y])
+            ProjectileManager.createProjectile(self.player.getXY(), [x, 0])
+            ProjectileManager.createProjectile(self.player.getXY(), [x, y])
         # right
         x = resolution[0]
         for y in range(0, resolution[1], Projectile.SIZE//2):
-            ProjectileManager.createProjectile(self.player.getCenter(), [x, y])
+            ProjectileManager.createProjectile(self.player.getXY(), [x, y])
 
     def cheatAmmo(self):
         self.player.ammo_tracker.current_ammo = 9999
@@ -478,10 +446,9 @@ class Game:
                           background='SlateGray1')
         self.canvas.pack()
         
-        self.player = Player(self.canvas, "player.png")
-        starting_point = (self.player.SIZE,
+        starting_point = (60,
                           self.windowManager.getResolution()[1]/2)
-        self.player.create(starting_point)
+        self.player = Player(self.canvas, starting_point)
 
         self.createGlobalStatTrackers()
         self.ui = UI(self.canvas, self.player)
@@ -489,8 +456,8 @@ class Game:
         self.bindKeys()
 
     def saveGameToFile(self):
-        data = {"player": self.player.getCenter(),
-                "enemies": [e.getCenter() for e in EnemyManager.enemies],
+        data = {"player": self.player.getXY(),
+                "enemies": [e.getXY() for e in EnemyManager.enemies],
                 "hp": HealthTracker.hp,
                 "score": ScoreTracker.score,
                 "ammo": self.player.ammo_tracker.current_ammo}
