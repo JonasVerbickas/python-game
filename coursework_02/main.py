@@ -10,6 +10,6 @@ if __name__ == "__main__":
     window.geometry(str(RESOLUTION[0]) + 'x' + str(RESOLUTION[1]))
     window.configure(bg='black')
     windowManager = WindowManager(window, RESOLUTION)
-    while True: # keeps us looping even when all the frames are deleted
+    while window: # keeps us looping even when all the frames are deleted
         window.update()
     window.mainloop()
