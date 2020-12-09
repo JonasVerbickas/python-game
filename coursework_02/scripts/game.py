@@ -4,7 +4,7 @@ from random import randint
 from time import time
 from json import load, dumps
 from os import remove
-from os.path import isfile
+from os.path import isfile, dirname
 
 MAX_AMMO = 5
 MAX_HEALTH = 2
@@ -76,9 +76,9 @@ def outOfBounds(obj, bounds):
     mult = 2
     bounds = [mult*b for b in bounds]
     # horizontal
-    if obj.getXY()[0] > bounds[0] or obj.getXY()[2] < -bounds[0]:
+    if obj.getCenter()[0] > bounds[0] or obj.getCenter()[0] < -bounds[0]:
         return True
-    elif obj.getXY()[1] < -bounds[1] or obj.getXY()[3] > bounds[1]:
+    elif obj.getCenter()[1] < -bounds[1] or obj.getCenter()[1] > bounds[1]:
         return True
     else:
         return False
@@ -119,6 +119,32 @@ class Shape:
 
     def getXY(self):  # return dimensions of an object
         return self.canvas.coords(self.ID)
+
+
+class Sprite:
+    ID = 0
+    SIZE = 0
+
+    def __init__(self, canvas, sprite_file):
+        self.canvas = canvas
+        sprite_location = "assets/" + sprite_file
+        self.img = PhotoImage(file=sprite_location)
+        # radius/hitbox
+        self.SIZE = sqrt((self.getSize()[0]/2)**2 + (self.getSize()[1]/2)**2)
+
+    def distanceToAPoint(self, point):
+        center_coords = self.getCenter()
+        dist = calcDistanceVector(center_coords, point)
+        return dist
+
+    def getCenter(self):
+        return self.getXY()
+
+    def getXY(self):  # return dimensions of an object
+        return self.canvas.coords(self.ID)
+
+    def getSize(self):
+        return (self.img.width(), self.img.height())
 
 
 class Reticle(Shape):
@@ -167,15 +193,14 @@ class Projectile(Shape):
         self.ID = self.canvas.create_rectangle(xy, fill='black', outline='red')
 
 
-class Enemy(Shape):
+class Enemy(Sprite):
     WORTH = 10
-    SIZE = 55
     SPEED = 8
     MAX_SPEED = 12
     MULT = 1.02  # 20 to reach max
 
     def create(self, xy):
-        self.ID = self.canvas.create_oval(xy, fill='dark green')
+        self.ID = self.canvas.create_image(xy[0], xy[1], image=self.img, anchor="center")
         if Enemy.SPEED < Enemy.MAX_SPEED:
             Enemy.SPEED *= Enemy.MULT
 
@@ -231,8 +256,10 @@ class EnemyManager():
         if time()-EnemyManager.last_spawn > EnemyManager.SPAWN_INTERVAL:
             w = EnemyManager.windowManager.getResolution()[0]
             h = EnemyManager.windowManager.getResolution()[1]
-            e = Enemy(EnemyManager.canvas)
-            xy = createCoordsFromCenter([w, randint(0, h-e.SIZE)], e.SIZE)
+            e = Enemy(EnemyManager.canvas, "zombie.png")
+            xy = createCoordsFromCenter([w+e.getSize()[0], 
+                                        randint(0, h-e.getSize()[1])],
+                                        e.SIZE)
             e.create(xy)
             EnemyManager.enemies.append(e)
             EnemyManager.last_spawn = time()
@@ -279,7 +306,7 @@ class AmmoTracker():
     master = 0  # id of the object whose ammo we are tracking
 
     def __init__(self, obj):
-        self.master = master
+        self.master = obj
         self.reload_started_at = time()
         self.current_ammo = MAX_AMMO
 
@@ -520,9 +547,8 @@ class Game:
             EnemyManager.enemies.append(e)
 
     def loop(self):
-        need_to_save = False
+        need_to_save = self.SAVE_AND_MENU or self.SAVE_AND_BOSSKEY
         while HealthTracker.hp > 0 and not need_to_save:
-            print(need_to_save)
             frame_start_time = time()
             self.player.ammo_tracker.tryToReload()
             ProjectileManager.manage()
