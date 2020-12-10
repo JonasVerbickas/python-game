@@ -31,3 +31,5 @@ Hold off enemies for as long as you can!
 - Bullet sprite is made by *Master484* from [OpenGameArt.org](https://opengameart.org/content/bullet-collection-1-m484)
 
 - In game background (temporary disabled) is made by *Daniel Gregory Benoy* from [OpenGameArt.org](https://opengameart.org/content/weatherd-tarmac-2-freshly-tarred)
+
+- Grave spirte is made by *AntumDeluge* from [OpenGameArt.org](https://opengameart.org/content/lpc-grave-markers-rework)
