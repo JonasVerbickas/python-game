@@ -8,7 +8,7 @@ from os.path import isfile, dirname
 
 MAX_AMMO = 5
 MAX_HEALTH = 2
-TIME_BETWEEN_FRAMES = 25  # ms
+TIME_BETWEEN_FRAMES = 20  # ms
 FASTEST_SPAWNING = 0.3  # sec
 INFINITE_AMMO = "kilburn"
 BOOM = "boom"
@@ -228,10 +228,10 @@ class EnemyManager():
 
     @staticmethod
     def createTombstone(coords):
-        grave = EnemyManager.canvas.create_image(coords[0], coords[1], 
-                                         image=EnemyManager.grave_img)
+        grave = EnemyManager.canvas.create_image(coords[0], coords[1],
+                                                 image=EnemyManager.grave_img)
         EnemyManager.canvas.after(2000,
-                                  lambda : EnemyManager.canvas.delete(grave))
+                                  lambda: EnemyManager.canvas.delete(grave))
 
     @staticmethod
     def killEnemy(e):
@@ -246,7 +246,11 @@ class EnemyManager():
             bounds[0] += e.SIZE*2  # bounds depend on the enemy
             if outOfBounds(e, bounds):
                 EnemyManager.killEnemy(e)
-            elif e.getXY()[0] < e.SIZE:
+            elif e.getXY()[0] < e.SIZE * 2 and HealthTracker.hp > 1:
+                HealthTracker.hp -= 1
+                EnemyManager.killEnemy(e)
+                HealthTracker.destroyWall()
+            elif e.getXY()[0] < e.SIZE:  # damage player
                 HealthTracker.hp -= 1
                 EnemyManager.killEnemy(e)
             else:
@@ -296,7 +300,7 @@ class AmmoTracker():
         self.master.canvas.master.after(4)
         self.moveAllChildren(self.master.canvas, 4)
         self.master.canvas.master.after(4)
-        self.moveAllChildren(self.master.canvas, -4)   
+        self.moveAllChildren(self.master.canvas, -4)
 
     def shoot(self, event):
         if self.current_ammo > 0:
@@ -312,10 +316,16 @@ class AmmoTracker():
 
 
 class HealthTracker:
-    hp = 1
+    hp = 2
 
-    def __init__(self):
+    def __init__(self, game):
         HealthTracker.hp = MAX_HEALTH
+        HealthTracker.game = game
+
+    @staticmethod
+    def destroyWall():
+        for wire in HealthTracker.game.barbed_wire:
+            HealthTracker.game.canvas.delete(wire)
 
 
 class ScoreTracker:
@@ -389,7 +399,7 @@ class Game:
         global TENET_ACTIVATABLE
         TENET_ACTIVATABLE = False
         ProjectileManager(self.canvas, self.windowManager)
-        HealthTracker()
+        HealthTracker(self)
         ScoreTracker()
         EnemyManager(self.canvas, self.windowManager)
 
@@ -483,6 +493,19 @@ class Game:
                           self.windowManager.getResolution()[1]/2)
         self.player = Player(self.canvas, starting_point)
 
+        self.barbed_wire = []
+
+        self.wire_img = PhotoImage(file="assets/wire_small.gif")
+        self.wire1 = self.canvas.create_image(110, 0,
+                                             image=self.wire_img,
+                                             anchor='nw')
+        self.barbed_wire.append(self.wire1)
+
+        self.wire2 = self.canvas.create_image(110, self.wire_img.height()-30,
+                                             image=self.wire_img,
+                                             anchor='nw')
+        self.barbed_wire.append(self.wire2)
+
         self.createGlobalStatTrackers()
         self.ui = UI(self.canvas, self.player)
 
@@ -524,6 +547,7 @@ class Game:
             # how long the operations needed took
             delay = TIME_BETWEEN_FRAMES - (time()-frame_start_time) * 1000
             delay = int(round(delay, 0))
+            print(delay)
             if delay < 0:
                 delay = 0
             self.frame.after(delay)
