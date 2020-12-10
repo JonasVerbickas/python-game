@@ -326,13 +326,16 @@ class UI:
         self.canvas = canvas
         self.player = player
         self.score = self.canvas.create_text(640, 20, text="Score: 0",
-                                             font=("Arial", 24, 'bold'))
+                                             font=("Arial", 24, 'bold'),
+                                             fill='linen')
         self.ammo = self.canvas.create_text(1260, 20, text="Ammo: 0",
                                             font=("Arial", 21, 'bold'),
-                                            anchor='e')
+                                            anchor='e',
+                                            fill='linen')
         self.health = self.canvas.create_text(10, 20, text="Health: 0",
                                               font=("Arial", 21, 'bold'),
-                                              anchor='w')
+                                              anchor='w',
+                                              fill='linen')
 
     def update(self):
         score_str = "Score: " + str(ScoreTracker.score)
@@ -464,7 +467,7 @@ class Game:
         self.canvas = Canvas(self.frame,
                              width=self.windowManager.getResolution()[0],
                              height=self.windowManager.getResolution()[1],
-                             background='SlateGray1')
+                             background='dark olive green')
         self.canvas.pack()
 
         # background reduces framerate immensly
