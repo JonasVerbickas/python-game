@@ -301,6 +301,8 @@ class AmmoTracker():
             self.reload_started_at = time()
             self.current_ammo -= 1
             starting_pos = self.master.getXY()
+            starting_pos[0] = starting_pos[0] + self.master.getSize()[0]/2
+            starting_pos[1] = starting_pos[1] + self.master.getSize()[1]/4
             goal = [event.x,
                     event.y]
             ProjectileManager.createProjectile(starting_pos, goal_xy=goal)
