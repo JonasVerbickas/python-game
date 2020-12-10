@@ -211,6 +211,7 @@ class EnemyManager():
         EnemyManager.canvas = canvas
         EnemyManager.last_spawn = time()
         EnemyManager.enemies = []
+        EnemyManager.grave_img = PhotoImage(file="assets/grave.gif")
         EnemyManager.windowManager = windowManager
 
     @staticmethod
@@ -226,7 +227,15 @@ class EnemyManager():
                 EnemyManager.SPAWN_INTERVAL *= 0.98
 
     @staticmethod
+    def createTombstone(coords):
+        grave = EnemyManager.canvas.create_image(coords[0], coords[1], 
+                                         image=EnemyManager.grave_img)
+        EnemyManager.canvas.after(2000,
+                                  lambda : EnemyManager.canvas.delete(grave))
+
+    @staticmethod
     def killEnemy(e):
+        EnemyManager.createTombstone(e.getXY())
         EnemyManager.canvas.delete(e.ID)
         EnemyManager.enemies.remove(e)
 
@@ -282,9 +291,9 @@ class AmmoTracker():
 
     def shakeCamera(self):
         self.moveAllChildren(self.master.canvas, 2)
-        self.master.canvas.master.after(1)
+        self.master.canvas.master.after(5)
         self.moveAllChildren(self.master.canvas, -4)
-        self.master.canvas.master.after(1)
+        self.master.canvas.master.after(5)
         self.moveAllChildren(self.master.canvas, 2)
 
     def shoot(self, event):
