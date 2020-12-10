@@ -33,3 +33,5 @@ Hold off enemies for as long as you can!
 - In game background (temporary disabled) is made by *Daniel Gregory Benoy* from [OpenGameArt.org](https://opengameart.org/content/weatherd-tarmac-2-freshly-tarred)
 
 - Grave spirte is made by *AntumDeluge* from [OpenGameArt.org](https://opengameart.org/content/lpc-grave-markers-rework)
+
+- Barbed wire sprite is made by *upklyak* from [Freepik.com]("http://www.freepik.com")

@@ -529,9 +529,7 @@ class Game:
         ScoreTracker.score = data['score']
         self.player.ammo_tracker.current_ammo = data['ammo']
         for e_coords in data['enemies']:
-            e = Enemy(self.canvas, "zombie.gif")
-            xy = createCoordsFromCenter(e_coords, e.SIZE)
-            e.create(xy)
+            e = Enemy(self.canvas, e_coords)
             EnemyManager.enemies.append(e)
 
     def loop(self):

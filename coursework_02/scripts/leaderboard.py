@@ -55,7 +55,7 @@ class LeaderBoard():
             placed = Label(grid_of_leaders, text=str(leader_i+1),
                            font=("Arial", 24), bg='white')
             placed.grid(row=leader_i, column=0, padx=5, sticky='e')
-            name = Label(grid_of_leaders, text=list_of_leaders[leader_i][0],
+            name = Label(grid_of_leaders, text=list_of_leaders[leader_i][0][:20],
                          font=("Arial", 24), bg='white')
             name.grid(row=leader_i, column=1, sticky='w')
             score = Label(grid_of_leaders, text=list_of_leaders[leader_i][1],
