@@ -135,7 +135,7 @@ class Projectile(Sprite):
         self.vector = self.goal2AdjustedtedVector(starting_xy, goal_xy)
         global TENET
         if TENET:
-            self.vector = [-self.vector[0], -self.vector[1]]        
+            self.vector = [-self.vector[0], -self.vector[1]]
 
 
 class Enemy(Sprite):
@@ -158,16 +158,15 @@ class Player(Sprite):
         super().__init__(canvas, "player.gif", coords)
         self.ammo_tracker = AmmoTracker(self)
 
-
     def up(self):
         if self.getXY()[1] > self.SIZE:
             self.canvas.move(self.ID, 0, -self.SPEED)
 
     def down(self):
         h = self.canvas.winfo_height()
-        if self.getXY()[1] < h-self.SIZE*2:
+        if self.getXY()[1] < h-self.SIZE:
             self.canvas.move(self.ID, 0, self.SPEED)
-        
+
 
 class ProjectileManager():
     canvas = 0
@@ -219,7 +218,7 @@ class EnemyManager():
         if time()-EnemyManager.last_spawn > EnemyManager.SPAWN_INTERVAL:
             w = EnemyManager.windowManager.getResolution()[0]
             h = EnemyManager.windowManager.getResolution()[1]
-            xy = [w, randint(0, h)]
+            xy = [w, randint(100, h-100)]
             e = Enemy(EnemyManager.canvas, xy)
             EnemyManager.enemies.append(e)
             EnemyManager.last_spawn = time()
@@ -262,7 +261,7 @@ class EnemyManager():
 
 
 class AmmoTracker():
-    SEC_TO_RELOAD = 0.4
+    SEC_TO_RELOAD = 0.5
     master = 0  # id of the object whose ammo we are tracking
 
     def __init__(self, obj):
@@ -276,19 +275,17 @@ class AmmoTracker():
                 self.current_ammo += 1
                 self.reload_started_at = time()
 
-    def shakeCamera(self):
-        for child in self.master.canvas.find_all():
-            self.master.canvas.move(child, 1, 0)
-            self.master.canvas.master.update()
-        self.master.canvas.master.after(1)
-        for child in self.master.canvas.find_all():
-            self.master.canvas.move(child, -2, 0)
-            self.master.canvas.master.update()
-        self.master.canvas.master.after(1)
-        for child in self.master.canvas.find_all():
-            self.master.canvas.move(child, 1, 0)
-            self.master.canvas.master.update()
+    def moveAllChildren(self, parent, direction):
+        for child in parent.find_all():
+            self.master.canvas.move(child, direction, 0)
+        self.master.canvas.master.update()
 
+    def shakeCamera(self):
+        self.moveAllChildren(self.master.canvas, 2)
+        self.master.canvas.master.after(1)
+        self.moveAllChildren(self.master.canvas, -4)
+        self.master.canvas.master.after(1)
+        self.moveAllChildren(self.master.canvas, 2)
 
     def shoot(self, event):
         if self.current_ammo > 0:
@@ -320,12 +317,12 @@ class UI:
         self.canvas = canvas
         self.player = player
         self.score = self.canvas.create_text(640, 20, text="Score: 0",
-                                             font=("Arial", 20, 'bold'))
+                                             font=("Arial", 24, 'bold'))
         self.ammo = self.canvas.create_text(1260, 20, text="Ammo: 0",
-                                            font=("Arial", 20, 'bold'),
+                                            font=("Arial", 21, 'bold'),
                                             anchor='e')
         self.health = self.canvas.create_text(10, 20, text="Health: 0",
-                                              font=("Arial", 20, 'bold'),
+                                              font=("Arial", 21, 'bold'),
                                               anchor='w')
 
     def update(self):
@@ -456,11 +453,16 @@ class Game:
 
     def initialAssetLoad(self):
         self.canvas = Canvas(self.frame,
-                          width=self.windowManager.getResolution()[0],
-                          height=self.windowManager.getResolution()[1],
-                          background='SlateGray1')
+                             width=self.windowManager.getResolution()[0],
+                             height=self.windowManager.getResolution()[1],
+                             background='SlateGray1')
         self.canvas.pack()
-        
+
+        # background reduces framerate immensly
+        # to the point where it isn't worth it
+        # self.background = PhotoImage(file="assets/game_bg_2.gif")
+        # self.canvas.create_image(0, 0, image=self.background, anchor='nw')
+
         starting_point = (60,
                           self.windowManager.getResolution()[1]/2)
         self.player = Player(self.canvas, starting_point)
@@ -482,8 +484,8 @@ class Game:
     def loadFromFile(self):
         with open("save.json", 'r') as save_file:
             data = load(save_file)
-        xy = createCoordsFromCenter(data['player'], self.player.SIZE)
-        self.canvas.coords(self.player.ID, xy[0], xy[1], xy[2], xy[3])
+        xy = data['player']
+        self.canvas.coords(self.player.ID, xy[0], xy[1])
         HealthTracker.hp = data['hp']
         ScoreTracker.score = data['score']
         self.player.ammo_tracker.current_ammo = data['ammo']

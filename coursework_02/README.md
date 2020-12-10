@@ -27,3 +27,5 @@ Hold off enemies for as long as you can!
 - Zombie sprite is made by *ChessMasterRiley* from [OpenGameArt.org](https://opengameart.org/content/animated-top-down-zombie)
 
 - Player sprite is also made by *ChessMasterRiley* from [OpenGameArt.org](https://opengameart.org/content/animated-top-down-survivor-player)
+
+- Bullet sprite is made by *Master484* from [OpenGameArt.org](https://opengameart.org/content/bullet-collection-1-m484)
