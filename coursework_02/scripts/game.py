@@ -290,11 +290,13 @@ class AmmoTracker():
         self.master.canvas.master.update()
 
     def shakeCamera(self):
-        self.moveAllChildren(self.master.canvas, 2)
-        self.master.canvas.master.after(5)
+        self.moveAllChildren(self.master.canvas, 4)
+        self.master.canvas.master.after(4)
         self.moveAllChildren(self.master.canvas, -4)
-        self.master.canvas.master.after(5)
-        self.moveAllChildren(self.master.canvas, 2)
+        self.master.canvas.master.after(4)
+        self.moveAllChildren(self.master.canvas, 4)
+        self.master.canvas.master.after(4)
+        self.moveAllChildren(self.master.canvas, -4)   
 
     def shoot(self, event):
         if self.current_ammo > 0:
@@ -408,7 +410,7 @@ class Game:
             if TENET:
                 self.canvas.configure(bg='salmon1')
             else:
-                self.canvas.configure(bg='SlateGray1')
+                self.canvas.configure(bg='dark olive green')
 
     def cheatLife(self):
         HealthTracker.hp = 100
