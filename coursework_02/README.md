@@ -11,7 +11,7 @@ Hold off enemies for as long as you can!
 
 ## Cheats
 	
-- "kirburn" - infinite ammo
+- "kilburn" - infinite ammo
 
 - "boom" - to go boom
 
@@ -29,3 +29,5 @@ Hold off enemies for as long as you can!
 - Player sprite is also made by *ChessMasterRiley* from [OpenGameArt.org](https://opengameart.org/content/animated-top-down-survivor-player)
 
 - Bullet sprite is made by *Master484* from [OpenGameArt.org](https://opengameart.org/content/bullet-collection-1-m484)
+
+- In game background (temporary disabled) is made by *Daniel Gregory Benoy* from [OpenGameArt.org](https://opengameart.org/content/weatherd-tarmac-2-freshly-tarred)
