@@ -340,14 +340,14 @@ class UI:
         self.canvas = canvas
         self.player = player
         self.score = self.canvas.create_text(640, 20, text="Score: 0",
-                                             font=("Arial", 24, 'bold'),
+                                             font=("Arial", 25, 'bold'),
                                              fill='linen')
         self.ammo = self.canvas.create_text(1260, 20, text="Ammo: 0",
-                                            font=("Arial", 21, 'bold'),
+                                            font=("Arial", 22, 'bold'),
                                             anchor='e',
                                             fill='linen')
-        self.health = self.canvas.create_text(10, 20, text="Health: 0",
-                                              font=("Arial", 21, 'bold'),
+        self.health = self.canvas.create_text(10, 20, text="HP: 0",
+                                              font=("Arial", 22, 'bold'),
                                               anchor='w',
                                               fill='linen')
 
@@ -355,7 +355,7 @@ class UI:
         score_str = "Score: " + str(ScoreTracker.score)
         ammo_str = "Ammo: %d/%d" % (self.player.ammo_tracker.current_ammo,
                                     MAX_AMMO)
-        health_str = "Health: " + str(HealthTracker.hp)
+        health_str = "HP: " + str(HealthTracker.hp)
         self.canvas.itemconfig(self.score, text=score_str)
         self.canvas.itemconfig(self.ammo, text=ammo_str)
         self.canvas.itemconfig(self.health, text=health_str)
@@ -497,13 +497,12 @@ class Game:
 
         self.wire_img = PhotoImage(file="assets/wire_small.gif")
         self.wire1 = self.canvas.create_image(110, 0,
-                                             image=self.wire_img,
-                                             anchor='nw')
+                                              image=self.wire_img,
+                                              anchor='nw')
         self.barbed_wire.append(self.wire1)
-
         self.wire2 = self.canvas.create_image(110, self.wire_img.height()-30,
-                                             image=self.wire_img,
-                                             anchor='nw')
+                                              image=self.wire_img,
+                                              anchor='nw')
         self.barbed_wire.append(self.wire2)
 
         self.createGlobalStatTrackers()
@@ -545,7 +544,6 @@ class Game:
             # how long the operations needed took
             delay = TIME_BETWEEN_FRAMES - (time()-frame_start_time) * 1000
             delay = int(round(delay, 0))
-            print(delay)
             if delay < 0:
                 delay = 0
             self.frame.after(delay)
