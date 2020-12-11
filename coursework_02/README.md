@@ -34,4 +34,4 @@ Hold off enemies for as long as you can!
 
 - Grave spirte is made by *AntumDeluge* from [OpenGameArt.org](https://opengameart.org/content/lpc-grave-markers-rework)
 
-- Barbed wire sprite is made by *upklyak* from [Freepik.com]("http://www.freepik.com")
+- Barbed wire sprite is made by *upklyak* from [Freepik.com](http://www.freepik.com)
